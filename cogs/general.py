@@ -96,7 +96,7 @@ def get_docs_keys():
 	docs_data = load_md_as_dict(settings.resource("../docs/docs.md"))
 	return list(docs_data.keys())
 
-LOKI_APPLICATION_NAME = settings.loki["application"]
+LOKI_APPLICATION_NAME = settings.loki["application"] if settings.loki else 'None'
 class BotStats():
 	server_count: int
 	user_count: int
