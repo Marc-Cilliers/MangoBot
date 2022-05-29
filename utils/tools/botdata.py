@@ -150,7 +150,7 @@ class UserInfo(BotDataItem):
 guildinfo_variables = [
 	{
 		"key": "prefix",
-		"default": "?",
+		"default": "9q384hg%&*$",
 		"disabled": True,
 		"type": types.CommandPrefix,
 		"description": "Configures the character to use to prefix your commands for this server",
