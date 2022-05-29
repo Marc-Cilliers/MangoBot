@@ -1,7 +1,7 @@
 name: Build & Deploy
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   deploy:
@@ -10,16 +10,14 @@ jobs:
       - name: Deploy MangoBot
         uses: appleboy/ssh-action@master
         with:
-          host: ${{secrets.SSH_HOST}}
-          key: ${{secrets.SSH_KEY}}
-          username: ${{secrets.SSH_USERNAME}}
+          host: ${{ secrets.SSH_HOST }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          username: ${{ secrets.SSH_USERNAME }}
 
           script: |
             mkdir app
             cd app
-            git clone git@github.com:Marc-Cilliers/MangoBot .
-            echo '✅ Deployed to Digital Ocean'
-            pip3 install -r requirements.txt
-            echo '✅ Packages installed'
-            python3 mangobyte.py
-            echo '✅ Bot running'
+            git clone https://github.com/Marc-Cilliers/MangoBot . || git pull https://github.com/Marc-Cilliers/MangoBot
+            python3.9 -m pip install -r requirements.txt
+            python3.9 mangobyte.py
