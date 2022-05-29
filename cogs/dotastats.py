@@ -581,7 +581,7 @@ class DotaStats(MangoCog):
 		----------
 		match_id: The match ID to fetch the stats for'
 		"""
-		await inter.response.defer()
+		# await inter.response.defer()
 
 		match = await get_match(match_id)
 		steam_id = self.config['streamer_steam_id']
