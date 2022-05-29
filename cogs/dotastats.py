@@ -283,7 +283,7 @@ class DotaStats(MangoCog):
 		self.embed_color = disnake.Color.teal()
 		self.win_color = disnake.Color.green()
 		self.lose_color = disnake.Color.red()
-		
+
 		dotabase = self.bot.get_cog("Dotabase")
 		if not dotabase:
 			raise ImportError("The Dotabase cog must be added before the DotaStats cog")
@@ -573,7 +573,7 @@ class DotaStats(MangoCog):
 		match = await get_match(match_id)
 		await self.player_match_stats(player.steam_id, match, inter)
 
-	@commands.slash_command()
+	@commands.command()
 	async def postgame(self, inter: disnake.CmdInter, match_id):
 		"""Gets fallen's postgame stats
 
