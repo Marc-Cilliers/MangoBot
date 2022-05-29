@@ -285,6 +285,7 @@ class DotaStats(MangoCog):
 		if not dotabase:
 			raise ImportError("The Dotabase cog must be added before the DotaStats cog")
 		self.dota_game_strings = read_json(settings.resource("json/dota_game_strings.json"))
+		self.config = read_json(settings.resource("json/config.json"))
 		self.hero_info = dotabase.get_hero_infos()
 		self.lookup_hero = dotabase.lookup_hero
 		self.chat_wheel_info = dotabase.get_chat_wheel_infos()
