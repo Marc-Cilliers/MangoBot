@@ -569,6 +569,51 @@ class DotaStats(MangoCog):
 		match = await get_match(match_id)
 		await self.player_match_stats(player.steam_id, match, inter)
 
+	@commands.slash_command()
+	async def postgame(self, ctx, match_id):
+		"""Gets fallen's postgame stats
+
+		Parameters
+		----------
+		match_id: The match ID to fetch the stats for'
+		"""
+		match = await get_match(match_id)
+		steam_id = self.config['streamer_steam_id']
+		streamer = next(p for p in match['players']
+										if p['account_id'] == steam_id)
+		streamer_win = streamer["win"] != 0
+		title = 'falleN WON!' if streamer_win else 'falleN LOST!'
+		embed_color = self.win_color if streamer_win else self.lose_color
+		# story = await self.tell_postgame_story(match, streamer['isRadiant'], streamer_win)
+		duration = get_pretty_duration(match['duration'], postfix=False)
+		game_mode = self.dota_game_strings.get(
+				f"game_mode_{match.get('game_mode')}", "Unknown")
+		lobby_type = self.dota_game_strings.get(
+				f"lobby_type_{match.get('lobby_type')}", "Unknown") + " "
+		if lobby_type == "Normal ":
+				lobby_type = ""
+
+		description = (f"His {lobby_type}**{game_mode}** match ended in {duration} \n\n")
+
+		embed = disnake.Embed(title=title,
+													description=description,
+													timestamp=datetime.datetime.utcfromtimestamp(match['start_time']), color=embed_color)
+
+		# embed.set_author(name="", url="https://www.opendota.com/matches/{}".format(match_id))
+		embed.add_field(name="Game Mode", value=game_mode)
+		embed.add_field(name="Lobby Type", value=game_mode)
+
+		match_image = disnake.File(await drawdota.create_postgame_image(match, streamer_win), filename="matchimage.png")
+
+		if streamer_win:
+			embed.set_thumbnail(url='https://cdn.glitch.com/fb7e55f2-3f82-4b8a-ba79-9a903f6a46b9%2Fpog.png?v=1614633965962')
+		else:
+			embed.set_thumbnail(url='https://cdn.glitch.com/fb7e55f2-3f82-4b8a-ba79-9a903f6a46b9%2Fpepega.png?v=1614633959884')
+
+		embed.set_image(url=f"attachment://{match_image.filename}")
+		embed.set_footer(text=str(match_id))
+		await ctx.send(embed=embed, file=match_image)
+
 	async def print_match_stats(self, inter, match):
 		match_id = match["match_id"]
 		duration = get_pretty_duration(match['duration'], postfix=False)
