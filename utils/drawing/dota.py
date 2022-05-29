@@ -292,20 +292,66 @@ async def get_spell_images(spells):
 		x += spell_size[0]
 	return result
 
+def won_lane(curr_player, players):
+	laneid = curr_player['lane']
+	radiant_eff = 0
+	dire_eff = 0
 
+	for player in players:
+		if player['lane'] == laneid and not player.get('is_roaming', False):
+		# this player is in this lane
+			if (player['isRadiant']):  # radiant player
+					if player.get('lane_efficiency', 0) > radiant_eff:
+							radiant_eff = player['lane_efficiency']
+			else:  # dire player
+					if player.get('lane_efficiency', 0) > dire_eff:
+							dire_eff = player['lane_efficiency']
 
-def get_lane(player):
+	if curr_player['isRadiant']:
+		return radiant_eff > dire_eff
+	else:
+		return dire_eff > radiant_eff
+
+def get_lane(player, players):
 	lane_dict = { 1: "Bot", 3: "Top", None: "" }
 	lane_role_dict = { 1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: "" }
+	win = won_lane(player, players)
+
 	if player.get('is_roaming'):
-		return "Roam"
+		return { "lane": "Roam", "win": None }
 	elif player.get('lane') in lane_dict:
-		return f"{lane_role_dict[player.get('lane_role')]}"
+		return { "lane": f"{lane_role_dict[player.get('lane_role')]}", "win": win }
 	else:
-		return lane_role_dict[player.get('lane_role')]
+		return { "lane": lane_role_dict[player.get('lane_role')], "win": win }
 
+def get_benchmark(benchmarks):
+    keys = ['gold_per_min', 'xp_per_min', 'kills_per_min',
+            'last_hits_per_min', 'hero_damage_per_min', 'hero_healing_per_min',
+            'tower_damage', 'stuns_per_min', 'lhten']
+    
+    colors = ['#FF4C4C', '#FFAB40', '#C9AF1E', '#66BBFF', '#66BB6B']
+    brackets = [0, 20, 40, 60, 80]
 
-async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents):
+    total = 0
+    count = 0
+
+    for key in keys:
+        pct = benchmarks.get(key).get('pct', 0)
+        if pct > 0:
+          total += pct
+          count += 1
+          
+    overall = round((total / count) * 100)
+    color = ''
+    
+    for i, bracket in enumerate(brackets, start=0):
+        if overall > bracket:
+            color = colors[i]
+    
+    return { "pct": overall, "color": color }
+
+async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents, players):
+	bench = get_benchmark(player.get('benchmarks'))
 	row = [
 		ColorCell(width=5, color=("green" if player["isRadiant"] else "red")),
 		ImageCell(img=await get_hero_image(player["hero_id"]), height=48),
@@ -314,12 +360,20 @@ async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents
 		TextCell(player.get("kills")),
 		TextCell(player.get("deaths")),
 		TextCell(player.get("assists")),
-		TextCell(player.get("gold_per_min"), color="yellow")
+		TextCell(f"{bench['pct']}%", color=bench['color']),
+		TextCell(player.get("gold_per_min"))
 	]
 	if is_parsed:
+		lane = await get_lane(player, players)
+		lane_color = 'white'
+		if lane['win'] is True:
+				lane_color = '#66BB6B'
+		elif lane['win'] is False:
+				lane_color = '#FF4C4C'
+
 		row.extend([
 			TextCell(player.get("actions_per_min")),
-			TextCell(get_lane(player)),
+			TextCell(lane['lane'], color=lane_color),
 			ImageCell(img=await get_active_aghs_image(player), height=48)
 		])
 	if has_talents:
@@ -355,6 +409,7 @@ async def draw_match_table(match):
 		TextCell("K", horizontal_align="center"),
 		TextCell("D", horizontal_align="center"),
 		TextCell("A", horizontal_align="center"),
+		TextCell("BM"),
 		TextCell("GPM", color="yellow")
 	]
 	if is_parsed:
@@ -378,12 +433,40 @@ async def draw_match_table(match):
 	# Do players
 	for player in match["players"]:
 		if player['isRadiant']:
-			await add_player_row(table, player, is_parsed, is_ability_draft, has_talents)
+			await add_player_row(table, player, is_parsed, is_ability_draft, has_talents, match["players"])
 	table.add_row([ColorCell(color=discord_color1, height=5) for i in range(len(headers))])
 	for player in match["players"]:
 		if not player['isRadiant']:
-			await add_player_row(table, player, is_parsed, is_ability_draft, has_talents)
+			await add_player_row(table, player, is_parsed, is_ability_draft, has_talents, match["players"])
 	return table.render()
+
+async def create_postgame_image(match, streamer_win):
+	table_border = 10
+	table_image = await draw_match_table(match)
+
+	image = Image.new(
+			'RGBA', (table_image.size[0] + (table_border * 2), table_image.size[1] + table_border + 64))
+	draw = ImageDraw.Draw(image)
+	draw.rectangle([0, 0, image.size[0], image.size[1]], fill=discord_color2)
+	draw.rectangle([0, 64, image.size[0], image.size[1]], fill=discord_color1)
+	image.paste(table_image, (table_border, 64))
+
+	title = TextCell(f"{'Radiant' if match['radiant_win'] else 'Dire'} Victory", font_size=48, color=(
+			"green" if match['radiant_win'] else "red"))
+	# title = TextCell(f"{'Victory' if streamer_win else 'Defeat'}", font_size=48, color=("green" if streamer_win else "red"))
+	title.render(draw, image, 64, 0, image.size[0] - 64, 64)
+
+	team_icon = Image.open(
+			radiant_icon if match['radiant_win'] else dire_icon).resize((64, 64))
+	temp_image = Image.new("RGBA", image.size)
+	temp_image.paste(team_icon, (0, 0))
+	image = Image.alpha_composite(image, temp_image)
+
+	fp = BytesIO()
+	image.save(fp, format="PNG")
+	fp.seek(0)
+
+	return fp
 
 async def create_match_image(match):
 	table_border = 10
