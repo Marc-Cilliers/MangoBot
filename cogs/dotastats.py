@@ -569,7 +569,7 @@ class DotaStats(MangoCog):
 		match = await get_match(match_id)
 		await self.player_match_stats(player.steam_id, match, inter)
 
-	@commands.slash_command()
+	@commands.command()
 	async def postgame(self, ctx, match_id):
 		"""Gets fallen's postgame stats
 
