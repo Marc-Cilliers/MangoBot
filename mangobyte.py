@@ -91,6 +91,7 @@ if __name__ == '__main__':
 			"message": "mangobyte script started"
 		})
 		logger.info(f"Starting mango at {datetime.datetime.today().strftime('%d-%b-%Y %I:%M %p')}")
-		bot.run(settings.token)
+		if (settings.live):
+			bot.run(settings.token)
 
 
