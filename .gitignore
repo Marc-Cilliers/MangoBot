@@ -95,7 +95,6 @@ logs/
 *.db
 
 botdata.json
-settings.json
 errors.json
 tmpfile
 

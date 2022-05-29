@@ -9,17 +9,22 @@ jobs:
     steps:
       - name: Deploy MangoBot
         uses: appleboy/ssh-action@master
+        env:
+          TOKEN: ${{ secrets.DISCORD_TOKEN }}
         with:
           host: ${{ secrets.SSH_HOST }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           username: ${{ secrets.SSH_USERNAME }}
           script_stop: true
+          envs: TOKEN
           script: |
+            prev=`ps ax | grep " python3.9 mangobyte.py$" | awk '{print $1}'`
+            [[ ! -z "$prev" ]] && kill $prev
             rm -r app 
             mkdir app 
             cd app
             git clone https://github.com/Marc-Cilliers/MangoBot .
             python3.9 -m pip install -r requirements.txt
-            echo "${{ secrets.SETTINGS }}" >> settings.json
-            python3.9 mangobyte.py
+            echo $(cat settings.json | jq --arg token "$TOKEN" '. |= . + { "token": $token }') > settings.json
+            nohup python3.9 mangobyte.py > nohup.out 2> nohup.err < /dev/null &
