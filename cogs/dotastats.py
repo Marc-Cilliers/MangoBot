@@ -539,7 +539,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed, file=match_image)
 
-	@commands.slash_command()
+	@commands.command()
 	async def lm(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets info about the player's last dota game
 
@@ -556,7 +556,7 @@ class DotaStats(MangoCog):
 		match = await get_match(match_id)
 		await self.player_match_stats(player.steam_id, match, inter)
 
-	@commands.slash_command()
+	@commands.command()
 	async def firstmatch(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets info about the player's first dota game
 
@@ -724,7 +724,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def recent(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets a list of your recent dota matches
     
@@ -776,7 +776,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed, file=matches_image)
 
-	@commands.slash_command()
+	@commands.command()
 	async def matchids(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets a list of recent matchids that match the given filter
     
@@ -821,7 +821,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def meta(self, inter: disnake.CmdInter, count: commands.Range[1, 120] = 10): 
 		"""Prints the top meta heroes from https://opendota.com/heroes
 		
@@ -838,7 +838,7 @@ class DotaStats(MangoCog):
 		embed.set_image(url=f"attachment://{meta_table.filename}")
 		await inter.send(embed=embed, file=meta_table)
 
-	@commands.slash_command()
+	@commands.command()
 	async def profile(self, inter: disnake.CmdInter, player: DotaPlayer = None):
 		"""Displays information about the player's dota profile
 
@@ -965,7 +965,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed, file=rank_icon)
 
-	@commands.slash_command()
+	@commands.command()
 	async def twenty(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets stats from the player's last 20 parsed games
 
@@ -979,7 +979,7 @@ class DotaStats(MangoCog):
 
 		await self.do_playerstats(inter, matchfilter, do_downloaded=True)
 
-	@commands.slash_command()
+	@commands.command()
 	async def playerstats(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
 		"""Gets stats about the player's dota matches
 
@@ -1252,7 +1252,7 @@ class DotaStats(MangoCog):
 		else:
 			await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def dotagif(self, inter: disnake.CmdInter, match: DotaMatch, start: str, end: str, ms_per_second : int = 100):
 		"""Creates a gif of a specific part of a dota match
 		
@@ -1332,7 +1332,7 @@ class DotaStats(MangoCog):
 		await inter.send(embed=embed, file=image)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def parse(self, inter: disnake.CmdInter, match_id: int = None):
 		"""Request for OpenDota to parse a recent match
 		
@@ -1379,7 +1379,7 @@ class DotaStats(MangoCog):
 		await inter.send(f"❌ Parsing of match {match_id} timed out. Try again later or on the opendota site.", delete_after=10)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def whoishere(self, inter: disnake.CmdInter, users: str = None, show_ranks: bool = False):
 		"""Shows the linked steam accounts of anyone who is in voice chat with mango
 		
@@ -1448,7 +1448,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def rolesgraph(self, inter: disnake.CmdInter, player: DotaPlayer = None):
 		"""Gets a graph displaying the dota player's hero roles
 

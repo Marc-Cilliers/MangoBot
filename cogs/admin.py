@@ -54,7 +54,7 @@ class Admin(MangoCog):
 			return True
 		return checks.is_admin_check(ctx_inter)
 
-	@commands.slash_command()
+	@commands.command()
 	async def botunban(self, inter: disnake.CmdInter, user: disnake.Member):
 		"""Unbans the user, allowing them to use commands. Note this will soon be deprecated.
 		
@@ -87,7 +87,7 @@ class Admin(MangoCog):
 				return bot.cogs[cog]
 		return None
 
-	@commands.slash_command()
+	@commands.command()
 	async def enablecommand(self, inter: disnake.CmdInter, command: str):
 		"""Re-enables the specified command or command category. Note this will soon be deprecated.
 		
@@ -112,7 +112,7 @@ class Admin(MangoCog):
 		guildinfo.enable_command(cmd.name)
 		await inter.send(f"✅ Done!\n{perms_cmd_deprecation_message}")
 
-	@commands.slash_command()
+	@commands.command()
 	async def summon(self, inter: disnake.CmdInter, channel : disnake.VoiceChannel = None):
 		"""Summons the bot to the voice channel
 		
@@ -142,7 +142,7 @@ class Admin(MangoCog):
 			raise UserError("There was a timeout when attempting to do the `/summon`")
 		await inter.send(f"✅ Summoned!")
 
-	@commands.slash_command()
+	@commands.command()
 	async def unsummon(self, inter: disnake.CmdInter):
 		"""Removes the bot from the voice channel"""
 		if not inter.guild:
@@ -154,7 +154,7 @@ class Admin(MangoCog):
 		botdata.guildinfo(inter.guild.id).voicechannel = None
 		await inter.send(f"✅ Unsummoned!")
 
-	@commands.slash_command()
+	@commands.command()
 	async def config(self, inter: disnake.CmdInter, setting: commands.option_enum(GuildInfo.keys_list()), value: str):
 		"""Configures the bot's settings for this server/guild
 

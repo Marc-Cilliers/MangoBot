@@ -19,8 +19,9 @@ jobs:
           script_stop: true
           envs: TOKEN
           script: |
-            prev=`ps ax | grep " python3.9 mangobyte.py$" | awk '{print $1}'`
-            [[ ! -z "$prev" ]] && kill $prev
+            prev=`ps ax | grep -P " python3.9 mangobyte.py$" | awk '{print $1}'`
+            echo $prev
+            [[ ! -z "$prev" ]] && echo "Killing previous process..." && kill $prev || echo "No process found"
             rm -r app 
             mkdir app 
             cd app

@@ -115,7 +115,7 @@ class Pokemon(MangoCog):
 
 		return True
 
-	@commands.slash_command()
+	@commands.command()
 	async def pokemon(self, inter: disnake.CmdInter, pokemon: str, shiny: bool = False):
 		"""Looks up information about the given pokemon
 
@@ -155,7 +155,7 @@ class Pokemon(MangoCog):
 
 		await inter.send(embed=embed)
 	
-	@commands.slash_command()
+	@commands.command()
 	async def pokecry(self, inter: disnake.CmdInter, pokemon: str, old: bool = False):
 		"""Plays the pokemon's sound effect
 

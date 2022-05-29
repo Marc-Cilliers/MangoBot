@@ -174,7 +174,7 @@ class General(MangoCog):
 		"""Gets information about mangobyte"""
 		pass # this is just a header for base commands
 
-	@commands.slash_command()
+	@commands.command()
 	async def userconfig(self, inter: disnake.CmdInter, setting: commands.option_enum(UserInfo.keys_list()), value: str):
 		"""Configures the bot's user-specific settings
 
@@ -194,7 +194,7 @@ class General(MangoCog):
 			botdata.userinfo(inter.author)[var["key"]] = value
 			await inter.send(f"✅ {setting} has been set!")
 
-	@commands.slash_command()
+	@commands.command()
 	async def ping(self, inter: disnake.CmdInter, count : commands.Range[1, 20] = 1):
 		"""Pongs a number of times(within reason)"""
 		ping_string = ""
@@ -202,7 +202,7 @@ class General(MangoCog):
 			ping_string += "pong "
 		await inter.send(ping_string)
 
-	@commands.slash_command()
+	@commands.command()
 	async def echo(self, inter: disnake.CmdInter, message: str):
 		"""Echos the given message
 		
@@ -349,7 +349,7 @@ class General(MangoCog):
 
 		await inter.send(" ".join(results))
 
-	@commands.slash_command()
+	@commands.command()
 	async def wiki(self, inter: disnake.CmdInter, thing: str):
 		"""Looks up a thing on wikipedia
 		
@@ -377,7 +377,7 @@ class General(MangoCog):
 		
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def reddit(self, inter: disnake.CmdInter, post: str):
 		"""Displays a formatted reddit post
 
@@ -533,7 +533,7 @@ class General(MangoCog):
 		options = options.split(" ")
 		await inter.send(random.choice(options))
 
-	@commands.slash_command()
+	@commands.command()
 	async def docs(self, inter: disnake.CommandInteraction, topic: str = commands.Param(choices=get_docs_keys())):
 		"""Shows some documentation about a specific part of the bot
 
@@ -806,7 +806,7 @@ class General(MangoCog):
 		imagepath = os.path.join(dog_dir, random.choice(os.listdir(dog_dir)))
 		await inter.send(file=disnake.File(imagepath))
 
-	@commands.slash_command()
+	@commands.command()
 	async def help(self, inter: disnake.CmdInter, topic: HELP_ARG_ENUM):
 		"""Gives some information about the bot command categories
 		

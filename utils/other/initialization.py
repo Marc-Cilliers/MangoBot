@@ -53,7 +53,7 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 		
 		# start periodic tasts
 		periodic_tasks = []
-		if not settings.debug:
+		if settings.debug:
 			periodic_tasks.append(audio_cog.voice_channel_culler)
 		if settings.topgg:
 			periodic_tasks.append(general_cog.update_topgg)

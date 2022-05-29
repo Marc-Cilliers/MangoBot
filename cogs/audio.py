@@ -399,7 +399,7 @@ class Audio(MangoCog):
 			
 		await self.clips_pager(inter, header, clips, page=page)
 
-	@commands.slash_command()
+	@commands.command()
 	async def stop(self, inter: disnake.CmdInter):
 		"""Stops the currently playing clip"""
 		await inter.response.defer()
@@ -413,7 +413,7 @@ class Audio(MangoCog):
 			audioplayer.voice.stop()
 		await inter.send("✅ stopped!")
 
-	@commands.slash_command()
+	@commands.command()
 	async def replay(self, inter: disnake.CmdInter):
 		"""Replays the last played clip"""
 		await inter.response.defer()
@@ -425,7 +425,7 @@ class Audio(MangoCog):
 		# If its not a temp file
 		await self.play_clip(last_clip, inter, print=True)
 
-	@commands.slash_command()
+	@commands.command()
 	async def clipinfo(self, inter: disnake.CmdInter, clipid: str = None):
 		"""Gets information and a file for the given clip
 
@@ -484,7 +484,7 @@ class Audio(MangoCog):
 			text = re.sub(pattern, gtts_fixes[key], text, re.IGNORECASE)
 		return await self.play_clip("tts:" + text, clip_ctx)
 
-	@commands.slash_command()
+	@commands.command()
 	async def say(self, inter: disnake.CmdInter, message: str):
 		"""Plays a sound clip based on the message given, drawing from multiple clip types
 

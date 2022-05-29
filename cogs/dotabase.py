@@ -639,7 +639,7 @@ class Dotabase(MangoCog):
 		audio_cog = self.bot.get_cog("Audio")
 		await audio_cog.clips_pager(inter, "Dota Chatwheel Lines", clipids, cliptext, page=page)
 
-	@commands.slash_command()
+	@commands.command()
 	async def hero(self, inter: disnake.CmdInter, hero: Hero):
 		"""Gets information about a specific hero
 		
@@ -711,7 +711,7 @@ class Dotabase(MangoCog):
 			except AudioPlayerNotFoundError:
 				pass
 
-	@commands.slash_command()
+	@commands.command()
 	async def talents(self, inter: disnake.CmdInter, hero: Hero):
 		"""Gets the talents of a specific hero
 		
@@ -726,7 +726,7 @@ class Dotabase(MangoCog):
 		await inter.send(file=image)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def ability(self, inter: disnake.CmdInter, ability: Ability):
 		"""Gets information about a specific hero ability
 
@@ -896,7 +896,7 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def item(self, inter: disnake.CmdInter, item: Item):
 		"""Gets information about a specific dota 2 item
 
@@ -1025,7 +1025,7 @@ class Dotabase(MangoCog):
 
 		await inter.send("✅ done!")
 
-	@commands.slash_command()
+	@commands.command()
 	async def lore(self, inter: disnake.CmdInter, name: str):
 		"""Gets the lore of a hero, ability, or item
 
@@ -1101,7 +1101,7 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def aghanim(self, inter: disnake.CmdInter, name: str, type: commands.option_enum(["Both", "Scepter", "Shard"]) = "Both"):
 		"""Gets the aghs upgrade for the given hero or ability
 
@@ -1180,7 +1180,7 @@ class Dotabase(MangoCog):
 				embed.set_thumbnail(url=f"{self.vpkurl}{ability.icon}")
 				await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def recipe(self, inter: disnake.CmdInter, item: Item):
 		"""Shows the recipes involving this item
 		
@@ -1234,7 +1234,7 @@ class Dotabase(MangoCog):
 		await inter.send(embed=embed, file=image)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def fuseheroes(self, inter: disnake.CmdInter, hero1: Hero, hero2: Hero):
 		"""Visually fuse together two heroes
 
@@ -1289,7 +1289,7 @@ class Dotabase(MangoCog):
 		await inter.send(embed=embed, file=image)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def courage(self, inter: disnake.CmdInter, hero: Hero = None):
 		"""Generates a challenge build with a random hero and items
 
@@ -1327,7 +1327,7 @@ class Dotabase(MangoCog):
 		await inter.send(file=image)
 
 
-	@commands.slash_command()
+	@commands.command()
 	async def neutralitems(self, inter: disnake.CmdInter, tier: commands.Range[0, 5] = 0):
 		"""Displays neutral item information
 		
@@ -1358,7 +1358,7 @@ class Dotabase(MangoCog):
 			embed.set_footer(text="Also try: /neutralitems tier 4")
 		await inter.send(embed=embed, file=image)
 
-	@commands.slash_command()
+	@commands.command()
 	async def herostats(self, inter: disnake.CmdInter, hero: Hero, level: commands.Range[1, 30] = 1):
 		"""Gets the stats for a hero at the specified level
 
@@ -1397,7 +1397,7 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	@commands.command()
 	async def herotable(self, inter: disnake.CmdInter, stat: HERO_STAT_ENUM, level: commands.Range[1, 30] = 1, hero_count: commands.Range[2, 40] = 20, reverse: bool = False):
 		"""Displays a table of dota heroes sorted by a stat
 
@@ -1417,7 +1417,7 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed, file=image)
 
-	@commands.slash_command()
+	@commands.command()
 	async def abilities(self, inter: disnake.CmdInter, hero: Hero):
 		"""Shows all of the abilities/spells for that hero
 
