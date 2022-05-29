@@ -281,6 +281,9 @@ class DotaStats(MangoCog):
 	def __init__(self, bot):
 		MangoCog.__init__(self, bot)
 		self.embed_color = disnake.Color.teal()
+		self.win_color = disnake.Color.green()
+		self.lose_color = disnake.Color.red()
+		
 		dotabase = self.bot.get_cog("Dotabase")
 		if not dotabase:
 			raise ImportError("The Dotabase cog must be added before the DotaStats cog")
