@@ -569,14 +569,16 @@ class DotaStats(MangoCog):
 		match = await get_match(match_id)
 		await self.player_match_stats(player.steam_id, match, inter)
 
-	@commands.command()
-	async def postgame(self, ctx, match_id):
+	@commands.slash_command()
+	async def postgame(self, inter: disnake.CmdInter, match_id):
 		"""Gets fallen's postgame stats
 
 		Parameters
 		----------
 		match_id: The match ID to fetch the stats for'
 		"""
+		await inter.response.defer()
+
 		match = await get_match(match_id)
 		steam_id = self.config['streamer_steam_id']
 		streamer = next(p for p in match['players']
@@ -612,7 +614,7 @@ class DotaStats(MangoCog):
 
 		embed.set_image(url=f"attachment://{match_image.filename}")
 		embed.set_footer(text=str(match_id))
-		await ctx.send(embed=embed, file=match_image)
+		await inter.send(embed=embed, file=match_image)
 
 	async def print_match_stats(self, inter, match):
 		match_id = match["match_id"]
