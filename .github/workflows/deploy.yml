@@ -16,7 +16,10 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           script_stop: true
           script: |
-            rm -r app && mkdir app && cd app
+            rm -r app 
+            mkdir app 
+            cd app
             git clone https://github.com/Marc-Cilliers/MangoBot .
             python3.9 -m pip install -r requirements.txt
+            echo "${{ secrets.SETTINGS }}" >> settings.json
             python3.9 mangobyte.py
