@@ -308,7 +308,7 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@misc.sub_command(name="lasagna")
+	# # @misc.sub_command(name="lasagna")
 	async def misc_lasagna(self, inter: disnake.CmdInter):
 		"""Posts an image of a baked italian dish"""
 		lasagna_images = [
@@ -324,7 +324,7 @@ class General(MangoCog):
 		]
 		await inter.send(file=disnake.File(settings.resource(random.choice(lasagna_images))))
 
-	@misc.sub_command(name="scramble")
+	# @misc.sub_command(name="scramble")
 	async def misc_scramble(self, inter: disnake.CmdInter, message: str):
 		"""Scrambles the insides of words
 		
@@ -438,7 +438,7 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@misc.sub_command(name="showerthought")
+	# @misc.sub_command(name="showerthought")
 	async def misc_showerthought(self, inter: disnake.CmdInter):
 		"""Gets a top post from the r/ShowerThoughts subreddit"""
 		await inter.response.defer()
@@ -456,7 +456,7 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@misc.sub_command(name="ask")
+	# @misc.sub_command(name="ask")
 	async def misc_ask(self, inter: disnake.CmdInter, question : str=""):
 		"""A magic 8-ball style question answerer
 
@@ -479,7 +479,7 @@ class General(MangoCog):
 		"""Insults the victim"""
 		await self._insult_impl(inter, victim)
 
-	@misc.sub_command(name="insult")
+	# @misc.sub_command(name="insult")
 	async def insult_slash(self, inter: disnake.CmdInter, victim: disnake.User=None):
 		"""Insults the given victim, or you if you dont target anyone
 
@@ -508,7 +508,7 @@ class General(MangoCog):
 		if inter.guild and inter.guild.me.voice:
 			await self.play_clip(f"tts:{start_local}{result}", inter)
 	
-	@misc.sub_command(name="random")
+	# @misc.sub_command(name="random")
 	async def misc_random(self, inter: disnake.CmdInter, maximum: int, minimum: int = 0):
 		"""Gets a random number between the minimum and maximum (inclusive)
 
@@ -523,7 +523,7 @@ class General(MangoCog):
 			result = random.randint(minimum, maximum)
 		await inter.send(result)
 	
-	@misc.sub_command(name="choose")
+	# @misc.sub_command(name="choose")
 	async def misc_choose(self, inter: disnake.CmdInter, options: str):
 		"""Randomly chooses one of the given options
 
@@ -792,14 +792,14 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@misc.sub_command(name="cat")
+	# @misc.sub_command(name="cat")
 	async def misc_cat(self, inter: disnake.CmdInter):
 		"""Gets a picture of the developer's cat"""
 		cat_dir = settings.resource("images/cat")
 		imagepath = os.path.join(cat_dir, random.choice(os.listdir(cat_dir)))
 		await inter.send(file=disnake.File(imagepath))
 
-	@misc.sub_command(name="dog")
+	# @misc.sub_command(name="dog")
 	async def misc_dog(self, inter: disnake.CmdInter):
 		"""Gets a picture of one of the developer's dogs"""
 		dog_dir = settings.resource("images/dog")
