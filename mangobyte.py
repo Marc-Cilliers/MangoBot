@@ -80,7 +80,7 @@ if __name__ == '__main__':
 	bot.add_cog(Dotabase(bot))
 	bot.add_cog(DotaStats(bot))
 	# bot.add_cog(Pokemon(bot))
-	# bot.add_cog(Admin(bot))
+	bot.add_cog(Admin(bot))
 	# bot.add_cog(Owner(bot))
 
 	if len(sys.argv) > 1 and sys.argv[1] in ["commands", "update"]:

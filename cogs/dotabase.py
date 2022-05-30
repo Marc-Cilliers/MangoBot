@@ -972,12 +972,12 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.slash_command()
+	# @commands.slash_command()
 	async def emoticon(self, inter: disnake.CmdInter):
 		"""Commands for dota 2 emotes"""
 		await inter.response.defer()
 
-	@emoticon.sub_command(name="show")
+	# @emoticon.sub_command(name="show")
 	async def emoticon_show(self, inter: disnake.CmdInter, name):
 		"""Gets the gif of a dota emoticon
 
@@ -997,7 +997,7 @@ class Dotabase(MangoCog):
 
 		await inter.send(file=image)
 
-	@emoticon.sub_command(name="add")
+	# @emoticon.sub_command(name="add")
 	async def emoticon_add(self, inter: disnake.CmdInter, name):
 		"""Adds a dota emoticon as an animated emoji to this server
 
