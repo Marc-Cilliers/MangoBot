@@ -96,7 +96,7 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 			await appinfo.owner.send(message)
 
 		game = disnake.Activity(
-			name="DOTA 3 [/help]",
+			name="with Renier's fat, juicy c...",
 			type=disnake.ActivityType.playing,
 			start=datetime.datetime.utcnow())
 		await bot.change_presence(status=disnake.Status.online, activity=game)
