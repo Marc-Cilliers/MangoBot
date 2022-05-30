@@ -164,12 +164,12 @@ class General(MangoCog):
 		self.words = load_words()
 		self.botstats_weekly = BotStats("7d")
 
-	@commands.slash_command()
+	# @commands.slash_command()
 	async def misc(self, inter):
 		"""A bunch of miscellaneous commands i made for fun"""
 		pass # this is just a header for base commands
 	
-	@commands.slash_command()
+	# @commands.slash_command()
 	async def bot(self, inter):
 		"""Gets information about mangobyte"""
 		pass # this is just a header for base commands
@@ -213,7 +213,7 @@ class General(MangoCog):
 		await inter.send(message)
 		
 
-	@bot.sub_command(name="changelog")
+	# @bot.sub_command(name="changelog")
 	async def changelog(self, inter: disnake.CmdInter):
 		"""Gets a rough changelog for mangobyte"""
 		await inter.response.defer()
@@ -244,7 +244,7 @@ class General(MangoCog):
 		embed.set_author(name="Changelog", url=f"{commit_url}/commits/master")
 		await inter.send(embed=embed)
 
-	@bot.sub_command(name="info")
+	# @bot.sub_command(name="info")
 	async def info(self, inter: disnake.CmdInter):
 		"""Prints info about mangobyte"""
 		await self._bot_info(inter)
@@ -279,12 +279,12 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@bot.sub_command(name="invite")
+	# @bot.sub_command(name="invite")
 	async def invite(self, inter: disnake.CmdInter):
 		"""Shows the invite link"""
 		await inter.send(settings.invite_link)
 
-	@bot.sub_command(name="stats")
+	# @bot.sub_command(name="stats")
 	async def stats(self, inter: disnake.CmdInter):
 		"""Displays some bot statistics"""
 		await inter.response.defer()
@@ -702,7 +702,7 @@ class General(MangoCog):
 			return # only keep going if we're in a guild
 		guildinfo = botdata.guildinfo(message.guild.id)
 
-		if message.author.bot and (message.author.id in guildinfo.allowedbots) or (message.webhook_id and guildinfo.allowwebhooks):
+		if message.author.bot and (message.author.id in ["808427972674584586"]) or (message.webhook_id and guildinfo.allowwebhooks):
 			# execute this command from a bot because we're allowing it
 			ctx = await self.bot.get_context(message)
 			await self.bot.invoke(ctx)
@@ -778,7 +778,7 @@ class General(MangoCog):
 			"inter_id": inter.id
 		})
 
-	@bot.sub_command(name="donate")
+	# @bot.sub_command(name="donate")
 	async def donate(self, inter: disnake.CmdInter):
 		"""Posts some links with info about how to donate to the developer"""
 		embed = disnake.Embed()
