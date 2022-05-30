@@ -308,7 +308,7 @@ class General(MangoCog):
 
 		await inter.send(embed=embed)
 
-	# # @misc.sub_command(name="lasagna")
+	# @misc.sub_command(name="lasagna")
 	async def misc_lasagna(self, inter: disnake.CmdInter):
 		"""Posts an image of a baked italian dish"""
 		lasagna_images = [
@@ -702,7 +702,7 @@ class General(MangoCog):
 			return # only keep going if we're in a guild
 		guildinfo = botdata.guildinfo(message.guild.id)
 
-		if message.author.bot and (message.author.id in ["808427972674584586"]) or (message.webhook_id and guildinfo.allowwebhooks):
+		if message.author.bot:
 			# execute this command from a bot because we're allowing it
 			ctx = await self.bot.get_context(message)
 			await self.bot.invoke(ctx)
