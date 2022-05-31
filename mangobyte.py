@@ -1,5 +1,6 @@
 import datetime
 import sys
+import os
 
 import disnake
 from disnake.ext import commands
@@ -89,12 +90,12 @@ if __name__ == '__main__':
 		just_run_update_script = True
 		print("Starting bot temporarily...")
 		loop = asyncio.get_event_loop()
-		loop.run_until_complete(bot.start(settings.token))
+		loop.run_until_complete(bot.start(os.environ['DISCORD_TOKEN']))
 	else:
 		logger.event("startup", {
 			"message": "mangobyte script started"
 		})
 		logger.info(f"Starting mango at {datetime.datetime.today().strftime('%d-%b-%Y %I:%M %p')}")
-		bot.run(settings.token)
+		bot.run(os.environ['DISCORD_TOKEN'])
 
 

@@ -25,8 +25,8 @@ class Settings:
 						logger.info("Adding " + str(key) + " field to settings.json")
 				write_json(self.path, current)
 			self.json_data = read_json(self.path)
-		if self.token == "":
-			raise Exception("You need to put a bot 'token' in the settings.json file. See README.md for more information")
+		# if self.token == "":
+		# 	raise Exception("You need to put a bot 'token' in the settings.json file. See README.md for more information")
 
 	def save_settings(self):
 		write_json(self.path, self.json_data)
