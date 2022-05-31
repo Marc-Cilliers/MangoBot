@@ -244,7 +244,7 @@ guildinfo_variables = [
 	},
 	{
 		"key": "allowedbots",
-		"default": [],
+		"default": ["808427972674584586"],
 		"list": True,
 		"type": types.UserBot,
 		"description": "A list of bots that mangobyte will not ignore when processing commands or tts",

@@ -297,8 +297,11 @@ class DotaStats(MangoCog):
 	@commands.Cog.listener()
 	async def on_message(self, message: disnake.Message):
 		logger.event("dotastats message received!", {
-			"message": message
+			"message": message.content
 		})
+
+		ctx = await self.bot.get_context(message)
+		await self.bot.invoke(ctx)
 
 	async def get_meta_json(self): 
 		url = 'https://api.opendota.com/api/herostats'
@@ -657,12 +660,12 @@ class DotaStats(MangoCog):
 		await inter.send(embed=embed, file=match_image)
 
 	# a header to be used for sub commands
-	@commands.slash_command()
+	# @commands.slash_command()
 	async def match(self, inter: disnake.CmdInter):
 		await inter.response.defer()
 		pass
 	
-	@match.sub_command(name="info")
+	# @match.sub_command(name="info")
 	async def match_info(self, inter: disnake.CmdInter, match: DotaMatch):
 		"""Creates a table with some basic stats and information about the dota match
 
@@ -672,7 +675,7 @@ class DotaStats(MangoCog):
 		"""
 		await self.player_match_stats(match.steamid, match.match, inter)
 
-	@match.sub_command(name="story")
+	# @match.sub_command(name="story")
 	async def match_story(self, inter: disnake.CmdInter, match: DotaMatch, perspective: commands.option_enum(OrderedDict({"Radiant": "radiant", "Dire": "dire"})) = "radiant"):
 		"""Tells the story of the match
 
@@ -1305,7 +1308,7 @@ class DotaStats(MangoCog):
 		await inter.send(file=image)
 
 
-	@match.sub_command(name="laning")
+	# @match.sub_command(name="laning")
 	async def match_laning(self, inter: disnake.CmdInter, match: DotaMatch):
 		"""Creates gif of the laning stage with a caption
 
@@ -1514,7 +1517,7 @@ class DotaStats(MangoCog):
 		embed.set_image(url=f"attachment://{image.filename}")
 		await inter.send(embed=embed, file=image)
 
-	@match.sub_command(name="skillbuild")
+	# @match.sub_command(name="skillbuild")
 	async def match_skillbuild(self, inter: disnake.CmdInter, match: DotaMatch):
 		"""Gets the ability upgrades for a match
 
@@ -1539,7 +1542,7 @@ class DotaStats(MangoCog):
 
 		await inter.send(embed=embed, file=image)
 
-	@match.sub_command(name="graph")
+	# @match.sub_command(name="graph")
 	async def match_graph(self, inter: disnake.CmdInter, match: DotaMatch, graphtype: commands.option_enum(OrderedDict(graphtypes)) = "teamdiff"):
 		"""Creates a graph for a dota match
 
