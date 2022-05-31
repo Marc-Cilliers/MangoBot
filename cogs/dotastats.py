@@ -294,6 +294,12 @@ class DotaStats(MangoCog):
 		self.chat_wheel_info = dotabase.get_chat_wheel_infos()
 		self.dota_gif_lock = asyncio.Lock()
 
+	@commands.Cog.listener()
+	async def on_message(self, message: disnake.Message):
+		logger.event("dotastats message received!", {
+			"message": message
+		})
+
 	async def get_meta_json(self): 
 		url = 'https://api.opendota.com/api/herostats'
 		return await httpgetter.get(url)
@@ -582,6 +588,10 @@ class DotaStats(MangoCog):
 		match_id: The match ID to fetch the stats for'
 		"""
 		# await inter.response.defer()
+
+		logger.event("postgame command start!", {
+			"match_id": match_id
+		})
 
 		match = await get_match(match_id)
 		steam_id = self.config['streamer_steam_id']
