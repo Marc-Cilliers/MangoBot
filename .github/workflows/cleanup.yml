@@ -26,7 +26,7 @@ jobs:
         run: doctl registry login --expiry-seconds 600
 
       - name: Remove all outdated manifests
-        run: if [ ! -z "$(doctl registry repository list-tags mangobot | grep -v $(echo $GITHUB_SHA | head -c7))" ]; then doctl registry repository delete-manifest $(doctl registry repository list-tags mangobot | grep -v $(echo $GITHUB_SHA | head -c7) | grep -o sha.*); else echo "No outdated manifests"; fi
+        run: if [ ! -z "$(doctl registry repository list-tags mangobot | grep -v $(echo $GITHUB_SHA | head -c7))" ]; then yes | doctl registry repository delete-manifest $(echo $IMAGE_NAME) $(doctl registry repository list-tags mangobot | grep -v $(echo $GITHUB_SHA | head -c7) | grep -o sha.*); else echo "No outdated manifests"; fi
 
       - name: Start garbage collection
         run: yes | doctl registry garbage-collection start
