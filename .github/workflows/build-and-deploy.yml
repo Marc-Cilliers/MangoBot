@@ -1,14 +1,9 @@
 name: Build & Deploy
 
 on:
-  push:
-    branches: [master]
-
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Image version'
-        required: true
+  push:
+    branches: [test]
 
 env:
   REGISTRY: 'registry.digitalocean.com/mangobot'

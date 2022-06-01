@@ -1,15 +1,10 @@
 name: Cleanup
 
 on:
-  schedule:
-    - cron: '14 2 * * *'
-    # - cron: '0 3 * * *'
-
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Image version'
-        required: true
+  schedule:
+    - cron: '45 1 * * *'
+    # - cron: '0 3 * * *'
 
 env:
   REGISTRY: 'registry.digitalocean.com/mangobot'
