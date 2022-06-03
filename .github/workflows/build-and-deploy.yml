@@ -3,7 +3,7 @@ name: Build & Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [master]
+    branches: [test]
 
 env:
   REGISTRY: 'registry.digitalocean.com/mangobot'
