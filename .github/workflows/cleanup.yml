@@ -27,7 +27,7 @@ jobs:
 
       - name: Remove all outdated manifests
         run: |
-          DIGESTS=$(doctl registry repository list-tags $(echo $IMAGE_NAME) | grep -v $(echo $GITHUB_SHA | head -c7) | grep -o "sha.*")
+          DIGESTS=$(doctl registry repository list-tags $(echo $IMAGE_NAME) | grep -v $(echo $GITHUB_SHA | head -c7) | { grep -o "sha.*" || true; } )
           if [ ! -z $(echo $DIGESTS) ]; then yes | doctl registry repository delete-manifest $(echo $IMAGE_NAME) $(echo $DIGESTS); else echo "No outdated manifests"; fi
 
       - name: Start garbage collection
