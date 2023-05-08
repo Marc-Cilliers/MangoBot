@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
-from cogs.dotastats import opendota_query
 from utils.tools.globals import httpgetter, logger, settings
 from utils.tools.helpers import (
     UserError, format_duration_simple, get_pretty_time, read_json, run_command)
@@ -400,7 +399,12 @@ async def get_rank_info(account_id):
     if account_id is None:
         return (None, None)
 
-    player = await opendota_query(f"/players/{account_id}")
+    player = await httpgetter.get(f"https://api.opendota.com/api/players/{account_id}?api_key={settings.odota}", cache=False, errors={
+        404: "Dats not a valid query. Take a look at the OpenDota API Documentation: https://docs.opendota.com",
+        521: "[http error 521] Looks like the OpenDota API is down or somethin, so ya gotta wait a sec",
+        502: "[http error 502] Looks like there was an issue with the OpenDota API. Try again in a bit",
+        "default": "OpenDota said we did things wrong 😢. http status code: {}"
+    })
     return (player.get("rank_tier"), player.get("leaderboard_rank"))
 
 
