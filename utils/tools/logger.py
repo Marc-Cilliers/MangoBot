@@ -4,13 +4,12 @@ import logging.handlers
 from multiprocessing import Queue
 from typing import OrderedDict
 
-import logging_loki
 from utils.tools.settings import settings
 
 # if we wanna log disnake stuff https://docs.disnake.dev/en/latest/logging.html?highlight=logger
 # we can also get the root logger, which will give us a ton of info for all the libraries we have
 
-logging_loki.emitter.LokiEmitter.level_tag = "level"
+# logging_loki.emitter.LokiEmitter.level_tag = "level"
 
 trace_level = 21
 logging.addLevelName(trace_level, "TRACE")
@@ -49,7 +48,7 @@ def setup_logger():
 		logger.setLevel(logging.INFO)
 		
 	# loki handler setup
-	loki_handler = setup_loki_handler(settings.loki)
+	loki_handler = setup_loki_handler(None)
 	if loki_handler:
 		logger.addHandler(loki_handler)
 
@@ -66,16 +65,16 @@ def setup_loki_handler(loki_config):
 
 	baseurl = loki_config["base_url"]
 	url = f"{baseurl}/loki/api/v1/push"
-	handler_loki = logging_loki.LokiQueueHandler(
-		Queue(-1),
-		url=url,
-		tags={"application": loki_config["application"]},
-		auth=(loki_config["username"], loki_config["password"]),
-		version="1",
-	)
+	# handler_loki = logging_loki.LokiQueueHandler(
+	# 	Queue(-1),
+	# 	url=url,
+	# 	tags={"application": loki_config["application"]},
+	# 	auth=(loki_config["username"], loki_config["password"]),
+	# 	version="1",
+	# )
 
 	# add some checking here to see if its setup or something in future
 
-	return handler_loki
+	# return handler_loki
 
 logger = setup_logger()
