@@ -25,7 +25,6 @@ bot = commands.AutoShardedBot(
 	case_insensitive=True,
 	shard_count=settings.shard_count,
 	sync_commands_debug=False,
-	intents=intents,
 	test_guilds=settings.test_guilds,
 	reload=False,
 	intents=intents)
