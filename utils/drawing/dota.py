@@ -132,10 +132,10 @@ async def get_rank_image(rank_tier, leaderboard_rank):
         rank_tier = 0
 
     uri = f"dota_rank:{rank_tier}_{leaderboard_rank}"
-    logger.info(uri)
-    filename = httpgetter.cache.get_filename(uri)
-    if filename and not settings.debug:
-        return filename
+    # logger.info(uri)
+    # filename = httpgetter.cache.get_filename(uri)
+    # if filename and not settings.debug:
+    #     return filename
 
     filename = await httpgetter.cache.new(uri, "png")
 
@@ -164,13 +164,14 @@ async def get_rank_image(rank_tier, leaderboard_rank):
     if leaderboard_rank:
         draw = ImageDraw.Draw(image)
 
-        box_width = 256
-        box_height = 50
+        box_width = 64
+        box_height = 64
 
         cell = TextCell(leaderboard_rank, color="#feffe5",
                         font_size=50, horizontal_align="center")
         cell.render(draw, image, 0, 232 - box_height, box_width, box_height)
 
+    image.resize((64, 64))
     return image
 
 
@@ -446,12 +447,11 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         ImageCell(img=await get_hero_image(player["hero_id"]), height=48),
         ImageCell(img=await get_level_image(player.get("level", 1))),
         TextCell(player.get("personaname", "Anonymous")),
+        ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48),
         TextCell(player.get("kills")),
         TextCell(player.get("deaths")),
         TextCell(player.get("assists")),
         TextCell(f"{bench['pct']}%", color=bench['color']),
-		TextCell(player.get("gold_per_min"))
-        # ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48), # revisit this
     ]
 
     # add lone druid items row
@@ -475,7 +475,7 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
             ImageCell(img=await get_active_aghs_image(player), height=48)
         ])
     if has_talents:
-        row.append(ImageCell(img=await get_talents_image(player.get("ability_upgrades_arr"), player["hero_id"]), height=48))
+        # row.append(ImageCell(img=await get_talents_image(player.get("ability_upgrades_arr"), player["hero_id"]), height=48))
         row.append(ImageCell(img=await get_item_images(player), height=48))
     if is_ability_draft:
         def ad_ability_filter(ability_id):
@@ -580,11 +580,11 @@ async def draw_match_table(match):
         TextCell(""),
         TextCell(""),
         TextCell(""),
+        TextCell("", horizontal_align="center"),
         TextCell("K", horizontal_align="center"),
         TextCell("D", horizontal_align="center"),
         TextCell("A", horizontal_align="center"),
-        TextCell("BM"),
-        TextCell("GPM")
+        TextCell("BM")
     ]
     if is_parsed:
         headers.extend([
@@ -592,8 +592,8 @@ async def draw_match_table(match):
             TextCell("Lane"),
             TextCell("")
         ])
-    if has_talents:
-        headers.append(TextCell(""))
+    # if has_talents:
+        # headers.append(TextCell(""))
     headers.append(TextCell("Items"))
     if is_ability_draft:
         headers[3:3] = [
