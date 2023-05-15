@@ -1,9 +1,11 @@
 import math
 import os
+from queue import Empty
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
+import typing
 
 from PIL import Image, ImageDraw, ImageFont
 from utils.tools.globals import httpgetter, logger, settings
@@ -12,8 +14,8 @@ from utils.tools.helpers import (
 
 from .imagetools import *
 from utils.other.metastats import get_hero_pickban_percent, get_hero_winrate
-from utils.drawing.table import (
-    ColorCell, DoubleCell, ImageCell, SlantedTextCell, Table, TextCell, get_table_font)
+from utils.drawing.table import (ColorCell, DoubleCell, ImageCell, SlantedTextCell,
+                                 Table, TextCell, EmptyCell, CustomRenderCell, get_table_font)
 
 radiant_icon = settings.resource("images/radiant.png")
 dire_icon = settings.resource("images/dire.png")
@@ -94,7 +96,7 @@ def get_hero_name(hero_id):
 
 
 async def get_url_image(url):
-    return Image.open(await httpgetter.get(url, "bytes", cache=True))
+    return Image.open(await httpgetter.get(url, "bytes", cache_permanent=True))
 
 
 async def get_hero_image(hero_id):
@@ -215,7 +217,7 @@ async def get_talents_image(abilities, hero_id):
         abilities = [abilities]
     if abilities is None:
         abilities = []
-    talent_slots = []
+        talent_slots = []
     for ability_id in abilities:
         if ability_id not in ability_infos:
             continue
@@ -227,16 +229,14 @@ async def get_talents_image(abilities, hero_id):
                 talent_slots.append(talent.slot)
     talent_slots = sorted(talent_slots, reverse=True)
     uri = f"talents_icon:{'_'.join(map(str, talent_slots))}"
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return Image.open(filename)
     filename = await httpgetter.cache.new(uri, "png")
 
-    image = Image.open(settings.resource(
-        "images/talents/talent_background.png"))
+    image = Image.open(settings.resource("images/talents/talent_background.png"))
     for slot in talent_slots:
-        slot_image = Image.open(settings.resource(
-            f"images/talents/talent_{slot}.png"))
+        slot_image = Image.open(settings.resource(f"images/talents/talent_{slot}.png"))
         image = paste_image(image, slot_image)
 
     image.save(filename, format="PNG")
@@ -382,17 +382,15 @@ def won_lane(curr_player, players):
         return dire_eff > radiant_eff
 
 
-def get_lane(player, players):
-    lane_dict = {1: "Bot", 3: "Top", None: ""}
-    lane_role_dict = {1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: ""}
-    win = won_lane(player, players)
-
+def get_lane(player):
+    lane_dict = { 1: "Bot", 3: "Top", None: "" }
+    lane_role_dict = { 1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: "" }
     if player.get('is_roaming'):
-        return {"lane": "Roam", "win": None}
+        return "Roam"
     elif player.get('lane') in lane_dict:
-        return {"lane": f"{lane_role_dict[player.get('lane_role')]}", "win": win}
+        return f"{lane_role_dict[player.get('lane_role')]}"
     else:
-        return {"lane": lane_role_dict[player.get('lane_role')], "win": win}
+        return lane_role_dict[player.get('lane_role')]
 
 
 async def get_rank_info(account_id):
@@ -436,6 +434,7 @@ def get_benchmark(benchmarks):
 
 
 async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents, players):
+    draw_bear_row = player["hero_id"] == 80 and len(player.get("additional_units") or []) > 0
     bench = get_benchmark(player.get('benchmarks'))
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
 
@@ -451,37 +450,103 @@ async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents
         ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48),
     ]
     if is_parsed:
-        lane = await get_lane(player, players)
-        lane_color = 'white'
-        if lane['win'] is True:
-            lane_color = '#66BB6B'
-        elif lane['win'] is False:
-            lane_color = '#FF4C4C'
-
         row.extend([
             TextCell(player.get("actions_per_min")),
-            TextCell(lane['lane'], color=lane_color),
+            TextCell(get_lane(player)),
             ImageCell(img=await get_active_aghs_image(player), height=48)
         ])
     if has_talents:
         row.append(ImageCell(img=await get_talents_image(player.get("ability_upgrades_arr"), player["hero_id"]), height=48))
-    row.append(ImageCell(img=await get_item_images(player), height=48))
+        row.append(ImageCell(img=await get_item_images(player), height=48))
     if is_ability_draft:
         def ad_ability_filter(ability_id):
             ability = ability_infos[ability_id]["entity"]
             return not (ability.is_talent or ("ad_special_bonus" in ability.name))
-        abilities = filter(ad_ability_filter,
-                           player.get("ability_upgrades_arr"))
+        abilities = filter(ad_ability_filter, player.get("ability_upgrades_arr"))
         abilities = list(set(abilities))
-        abilities = sorted(
-            abilities, key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20)
+        abilities = sorted(abilities, key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20)
         if len(abilities) > 4:
             abilities = abilities[:4]
         row[3:3] = [
             ImageCell(img=await get_spell_images(abilities), height=48)
         ]
+                
+    if (player.get("leaver_status", 0) or 0) > 1:
+        for cell in row[2:]:
+            cell.background = "#6d2426"
 
     table.add_row(row)
+
+def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
+    if (player.get("party_size", 0) or 0) <= 1:
+        return EmptyCell()
+    team_colors = [  "purple", "turquoise", "orange", "blue" ]
+    all_teams = []
+    player_slots_in_team = []
+    for p in match["players"]:
+        if p.get("party_size", 0) > 1 and p.get("party_id") not in all_teams:
+            all_teams.append(p.get("party_id"))
+        if p.get("party_id") == player.get("party_id"):
+            player_slots_in_team.append(p["player_slot"])
+    color_index = all_teams.index(player.get("party_id"))
+    if color_index >= len(team_colors):
+        color_index = len(team_colors) - 1
+    cell_color = team_colors[color_index]
+
+    if player_slots_in_team[0] == player["player_slot"]:
+        position = "top"
+    elif player_slots_in_team[-1] == player["player_slot"]:
+        position = "bottom"
+    else:
+        position = "middle"
+
+    if position == "middle":
+        return ColorCell(width=8, color=cell_color)
+    # custom cell renderer for some curviness
+    def custom_cell_render(draw, image, x, y, width, height):
+        corner = Image.new('RGBA', (width, width), (0, 0, 0, 0))
+        draw_corner = ImageDraw.Draw(corner)
+        draw_corner.pieslice((0, 0, width * 2, width * 2), 180, 270, fill=cell_color)
+        if position == "top":
+            draw.rectangle([x, y + width, x + width, y + height], fill=cell_color)
+            image = paste_image(image, corner.rotate(0), x, y)
+        elif position == "bottom":
+            draw.rectangle([x, y, x + width, y + height - width], fill=cell_color)
+            image = paste_image(image, corner.rotate(90), x, y + height - width)
+        return image, draw
+
+    return CustomRenderCell(width=8, render_func=custom_cell_render)
+
+# gets the hero image and adds a disconenct icon if applicable
+async def get_hero_player_status_image(player):
+    image = await get_hero_image(player["hero_id"])
+    if (player.get("leaver_status", 0) or 0) <= 1:
+        return image
+    disconnect_image = await get_url_image(vpkurl + "/panorama/images/hud/reborn/icon_disconnect_png.png")
+    disconnect_image = disconnect_image.resize((image.width, int((image.width / disconnect_image.width) * disconnect_image.height)), Image.ANTIALIAS)
+    image = paste_image(image, disconnect_image, 0, (image.height // 2) - (disconnect_image.height // 2))
+    return image
+
+def truncate(text, max_size):
+    if len(text) <= max_size:
+        return text
+    text = text[:max_size - 3]
+    text = re.sub(r"[\.\s]+$", "", text)
+    return text + "..."
+
+
+    # add lone druid items row
+    if draw_bear_row:
+        bear_unit = player["additional_units"][0]
+        bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
+        bear_row = [
+            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
+            create_party_cell(match, player, can_be_top=False),
+            ImageCell(img=bear_image, height=48),
+        ]
+        bear_row.extend([EmptyCell()] * (len(row) - (len(bear_row) + 1)))
+        bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
+        table.add_row(bear_row)
 
 
 async def draw_match_table(match):
@@ -612,7 +677,6 @@ async def combine_image_halves(img_url1, img_url2):
 
 
 def optimize_gif(uri, filename):
-
     # if need further, try doing O3 only after colors instead of before
     optimization = [
         ["--colors", "256"],
@@ -628,8 +692,7 @@ def optimize_gif(uri, filename):
     i = 0
 
     while file_size >= size_limit and i < len(optimization):
-        output = run_command(
-            ["gifsicle", "--conserve-memory", filename, "-o", filename] + optimization[i])
+        output = run_command(["gifsicle", "--conserve-memory", filename, "-o", filename] + optimization[i])
         file_size = os.path.getsize(filename) / 1000000
         logger.info(f"bytes: {file_size} MB")
         i += 1
@@ -653,7 +716,7 @@ def place_icon_on_map(map_image, icon, x, y):
 async def create_dota_gif(bot, match, stratz_match, start_time, end_time, ms_per_second=100):
     uri = f"match_gif:{match['match_id']}:{start_time}:{end_time}:{ms_per_second}"
 
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return filename
     filename = await httpgetter.cache.new(uri, "gif")
@@ -823,7 +886,7 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
 
 async def create_dota_emoticon(emoticon, url):
     uri = f"dota_emoticon:{emoticon.name}"
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return filename
 
@@ -869,7 +932,7 @@ async def dota_rank_icon(rank_tier, leaderboard_rank):
 
     uri = f"dota_rank:{rank_tier}_{leaderboard_rank}"
     logger.info(uri)
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return filename
 
@@ -1040,14 +1103,13 @@ async def draw_matches_table(matches, game_strings):
 
 # given talents as they are stored in dotabase
 async def draw_hero_talents(hero):
-    talents = list(map(lambda t: t.localized_name, hero.talents))
+    talents = list(map(lambda t: t.ability.localized_name, hero.talents))
     talent_rows = [
-        [talents[7], talents[6]],
-        [talents[5], talents[4]],
-        [talents[3], talents[2]],
-        [talents[1], talents[0]]
+        [ talents[7], talents[6] ],
+        [ talents[5], talents[4] ],
+        [ talents[3], talents[2] ],
+        [ talents[1], talents[0] ]
     ]
-
     image = Image.open(settings.resource("images/talents.png"))
     draw = ImageDraw.Draw(image)
 
@@ -1127,7 +1189,7 @@ async def draw_courage(hero_id, icon_ids):
 
 async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
     uri = f"artifact_deck:{deck_string}"
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return filename
 
@@ -1157,8 +1219,7 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
     grey_color = "#BBBBBB"
     table = Table(background=discord_color2)
 
-    table.add_row([ColorCell(color=discord_color1, height=border_size)
-                  for i in range(column_count)])
+    table.add_row([ColorCell(color=discord_color1, height=border_size) for i in range(column_count)])
     first = True
     for card in ordered_cards:
         cost = ""
@@ -1175,8 +1236,7 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
         if first:
             first = False
         else:
-            table.add_row([ColorCell(color=discord_color2, height=2)
-                          for i in range(column_count)])
+            table.add_row([ColorCell(color=discord_color2, height=2) for i in range(column_count)])
         table.add_row([
             ImageCell(img=await get_url_image(card.mini_image), height=48),
             ImageCell(img=await get_url_image(card.type_image), height=48),
@@ -1189,8 +1249,7 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
             cell.background = card_color.hex
     image = table.render()
 
-    border_image = Image.new(
-        'RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
+    border_image = Image.new('RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
     image = paste_image(border_image, image, border_size, 0)
 
     image.save(filename, format="PNG")
@@ -1403,23 +1462,23 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
 
 
 async def draw_itemrecipe(main_item, components, products):
-    item_ids = [main_item.id]
+    item_ids = [ main_item.id ]
     item_ids.extend(map(lambda i: i.id, components))
     item_ids.extend(map(lambda i: i.id, products))
     item_ids = "_".join(map(str, item_ids))
     uri = f"dota_recipe:{item_ids}"
-    filename = httpgetter.cache.get_filename(uri)
+    filename = await httpgetter.cache.get_filename(uri)
     if filename and not settings.debug:
         return filename
 
     filename = await httpgetter.cache.new(uri, "png")
 
-    line_ducking = 5  # how many pixels into the main item to hide the line
-    inner_padding = 60  # y padding between item rows
-    outer_padding = 10  # padding around the whole thing
-    item_size = (88, 64)  # the size of an item
-    max_spacing = 175  # the max spacing in between item centers
-    max_items_per_row = 5  # helps determine default image width
+    line_ducking = 5 # how many pixels into the main item to hide the line
+    inner_padding = 60 # y padding between item rows
+    outer_padding = 10 # padding around the whole thing
+    item_size = (88, 64) # the size of an item
+    max_spacing = 175 # the max spacing in between item centers
+    max_items_per_row = 5 # helps determine default image width
 
     max_items_per_row = max(max_items_per_row, len(components), len(products))
 
@@ -1429,8 +1488,7 @@ async def draw_itemrecipe(main_item, components, products):
     if products:
         rows += 1
 
-    base_size = (max_items_per_row * item_size[0] + outer_padding * 2, (rows * (
-        inner_padding + item_size[1])) - inner_padding + (2 * outer_padding))
+    base_size = (max_items_per_row * item_size[0] + outer_padding * 2, (rows * (inner_padding + item_size[1])) - inner_padding + (2 * outer_padding))
     base_image = Image.new('RGBA', base_size, (0, 0, 0, 0))
 
     rows = []
@@ -1449,11 +1507,10 @@ async def draw_itemrecipe(main_item, components, products):
             spacing = 0
             start_x = int((base_size[0] / 2) - (item_size[0] / 2))
         else:
-            spacing = int(
-                (base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1))
+            spacing = int((base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1))
             start_x = int(outer_padding)
         if spacing > max_spacing:
-            start_x += int(((spacing - max_spacing) * (len(row) - 1)) / 2)
+            start_x += int(((spacing - max_spacing)* (len(row) - 1)) / 2)
             spacing = max_spacing
         start_y = int(outer_padding + (i * (inner_padding + item_size[1])))
 
@@ -1492,13 +1549,11 @@ async def draw_itemrecipe(main_item, components, products):
             image = await get_item_image(row[j].id)
             base_image.paste(image, row_points[i][j])
 
-    base_image = base_image.resize(
-        (base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS)
+    base_image = base_image.resize((base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS)
 
     base_image.save(filename, format="PNG")
 
     return filename
-
 
 async def draw_heroabilities(abilities):
     abilities = sorted(abilities, key=lambda a: a.slot)
@@ -1557,42 +1612,51 @@ async def add_player_ability_upgrades_row(table, player):
 # draws a table of the ability upgrades for each hero in the match.
 
 
-async def draw_match_ability_upgrades(match):
-    if match["players"][0].get("ability_upgrades_arr") is None:
-        raise UserError("That match is too old, it doesn't have ability data")
-    is_parsed = match.get("version")
-    table = Table(background=discord_color2)
-    # Header
-    headers = [
-        TextCell("", padding=0),
-        TextCell(""),
-        TextCell("")
+async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]]):
+    # these are tuples, (slot, index)
+    item_size = (88, 64)
+    item_size_smaller = (int(item_size[0] / 2), int(item_size[1] / 2))
+    item_rows = [
+        [(0, 1),(0, 2), (1, 1),(1, 2), (2, 1),(2, 2)],
+        [(0, 0),        (1, 0),        (2, 0)       ],
+        None,
+        [(3, 0),        (4, 0),        (5, 0)       ],
+        [(3, 1),(3, 2), (4, 1),(4, 2), (5, 1),(5, 2)],
     ]
-    for i in range(1, 26):
-        headers.append(TextCell(f"{i}", width=48, horizontal_align="center"))
-    table.add_row(headers)
-    for cell in table.rows[0]:
-        cell.background = discord_color1
+    blank_item_image = await get_url_image(f"{vpkurl}/panorama/images/items/emptyitembg_png.png")
+    border_gap = 8
+    border_color = discord_color3
 
-    # Do players
-    for player in match["players"]:
-        if player['isRadiant']:
-            await add_player_ability_upgrades_row(table, player)
-    table.add_row([ColorCell(color=discord_color1, height=5)
-                  for i in range(len(headers))])
-    for player in match["players"]:
-        if not player['isRadiant']:
-            await add_player_ability_upgrades_row(table, player)
-    table_image = table.render()
+    # Ugh this code is ugly but whatever its fine
+    table = Table(background=border_color, border_size=border_gap)
+    for item_row in item_rows:
+        if item_row is None:
+            table.add_row([ColorCell(height=border_gap, color=border_color)])
+            continue
+        images = []
+        for item in item_row:
+            if len(slot_item_counts[item[0]]) > item[1]:
+                item_id, count = slot_item_counts[item[0]][item[1]]
+                images.append(await get_item_image(item_id))
+            else:
+                images.append(blank_item_image)
 
-    table_border = 10
+        is_dense_row = len(images) == 6
+        gap_size = (2 * border_gap) if is_dense_row else border_gap
+        image_row = Image.new("RGBA", ((item_size[0] * len(images)) + (gap_size * 2), item_size[1]))
+        x = 0
+        for i in range(len(images)):
+            image_row.paste(images[i], (x, 0))
+            x += item_size[0]
+            if (not is_dense_row) or (i % 2):
+                x += gap_size
 
-    image = Image.new(
-        'RGBA', (table_image.size[0] + (table_border * 2), table_image.size[1] + (table_border * 2)))
-    draw = ImageDraw.Draw(image)
-    draw.rectangle([0, 0, image.size[0], image.size[1]], fill=discord_color1)
-    image.paste(table_image, (table_border, table_border))
-
+        if len(images) == 6:
+            image_row = image_row.resize(((item_size_smaller[0] * len(images) + (border_gap * 2)), item_size_smaller[1]), Image.ANTIALIAS)
+        
+        table.add_row([ImageCell(img=image_row)])
+    image = table.render()
+    
     fp = BytesIO()
     image.save(fp, format="PNG")
     fp.seek(0)

@@ -99,7 +99,7 @@ class LocalClip(Clip):
 		clipinfos = audio.local_clipinfo
 
 		if not clipname in clipinfos:
-			raise ClipNotFound(self.type, clipname)
+			raise ClipNotFound(self.type(), clipname)
 
 		info = clipinfos[clipname]
 		self.author = info.get("author")
@@ -143,7 +143,7 @@ class TtsClip(Clip):
 		ttslang = "en-au" if not data else data.ttslang
 		uri = f"clip_tts_{ttslang}:{text}"
 
-		filename = httpgetter.cache.get_filename(uri)
+		filename = await httpgetter.cache.get_filename(uri)
 		if not filename:
 			filename = await httpgetter.cache.new(uri, "wav")
 			try:

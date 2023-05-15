@@ -35,10 +35,18 @@ class InvalidMatchIdError(UserError):
 	def __init__(self, match_id):
 		super().__init__(f"Sorry, looks like `{match_id}` isn't a valid match id")
 
+class MatchNotFoundError(UserError):
+	def __init__(self, matchfilter):
+		embed = disnake.Embed()
+		embed.title = "No Matches Found"
+		embed.description = matchfilter.localize([])
+		embed.description += "\n\nNo matches found!"
+		super().__init__(message="", embed=embed)
+
 opendota_html_errors = {
 	404: "Dats not a valid query. Take a look at the OpenDota API Documentation: https://docs.opendota.com",
 	521: "[http error 521] Looks like the OpenDota API is down or somethin, so ya gotta wait a sec",
-	502: "[http error 502] Looks like there was an issue with the OpenDota API. Try again in a bit",
+	502: "[http error 502] The OpenDota API is having some trouble connecting to Steam. Try again in a bit",
 	"default": "OpenDota said we did things wrong 😢. http status code: {}"
 }
 
@@ -100,7 +108,7 @@ async def opendota_query_filter(matchfilter):
 # rate_limit = false if this is the only query we're sending
 async def get_match(match_id):
 	url = opendota_query_get_url(f"/matches/{match_id}")
-	cached_data = httpgetter.cache.get(url, "json")
+	cached_data = await httpgetter.cache.get(url, "json")
 
 	def check_valid_match(match_data):
 		if match_data.get('radiant_win', True) is None:
@@ -122,7 +130,7 @@ async def get_match(match_id):
 			await httpgetter.cache.remove(url)
 			raise InvalidMatchIdError(match_id)
 		else:
-			raise
+			raise 
 
 
 # rate_limit = false if this is the only query we're sending
@@ -131,7 +139,7 @@ async def get_stratz_match(match_id):
 		raise UserError("Stratz not configured properly. The bot owner has gotta put the stratz api key in the config file")
 
 	url = f"https://api.stratz.com/api/v1/match/{match_id}"
-	cached_data = httpgetter.cache.get(url, "json")
+	cached_data = await httpgetter.cache.get(url, "json")
 	
 	if cached_data:
 		if is_stratz_parsed(cached_data):
@@ -149,6 +157,9 @@ async def get_stratz_match(match_id):
 		logger.info("ClientConnectorError on stratz api result")
 		raise StratzMatchNotParsedError(match_id)
 
+def no_matches_found_response(matchfilter):
+	embed = disnake.embed()
+
 async def get_lastmatch_id(matchfilter, reverse=False):
 	no_filter = matchfilter.to_query_args() == ""
 	matchfilter.set_arg("significant", 0, False)
@@ -164,7 +175,7 @@ async def get_lastmatch_id(matchfilter, reverse=False):
 		if no_filter:
 			raise NoMatchHistoryError(matchfilter.player.steam_id)
 		else:
-			raise UserError("No matches found using that filter")
+			raise MatchNotFoundError(matchfilter)
 
 
 def s_if_plural(text, n):
@@ -496,7 +507,7 @@ class DotaStats(MangoCog):
 		embed.timestamp = datetime.datetime.fromtimestamp(match['start_time'], tz=datetime.timezone.utc)
 
 	# prints the stats for the given player's latest game
-	async def player_match_stats(self, steamid, match, inter):
+	async def player_match_stats(self, steamid, match, inter, description_intro=None):
 		# Finds the player in the game which has our matching steam32 id
 		match_id = match["match_id"]
 		player = None
@@ -514,11 +525,14 @@ class DotaStats(MangoCog):
 		lobby_type = self.dota_game_strings.get(f"lobby_type_{match.get('lobby_type')}", "Unknown") + " "
 		if lobby_type == "Normal ":
 			lobby_type = ""
-
+		
 		description = (f"{winstatus} a {lobby_type}**{game_mode}** match as {hero_name} in {duration}. "
 					f"More info at [DotaBuff](https://www.dotabuff.com/matches/{match_id}), "
 					f"[OpenDota](https://www.opendota.com/matches/{match_id}), or "
 					f"[STRATZ](https://www.stratz.com/match/{match_id})")
+		
+		if description_intro:
+			description = description_intro + "\n\n" + description
 
 		embed = disnake.Embed(description=description, color=self.embed_color)
 
@@ -558,12 +572,18 @@ class DotaStats(MangoCog):
 		"""
 		await inter.response.defer()
 		
+		def matchfilterfixer(text):
+			text = re.sub(r"^All", "The last", text)
+			text = re.sub(r" matches ", " match ", text)
+			return text
+
+		description_intro = None if (not matchfilter) else matchfilterfixer(matchfilter.localize())
 		matchfilter = await MatchFilter.init(matchfilter, inter)
 		player = matchfilter.player
 
 		match_id = await get_lastmatch_id(matchfilter)
 		match = await get_match(match_id)
-		await self.player_match_stats(player.steam_id, match, inter)
+		await self.player_match_stats(player.steam_id, match, inter, description_intro)
 
 	@commands.command()
 	async def firstmatch(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
@@ -575,12 +595,18 @@ class DotaStats(MangoCog):
 		"""
 		await inter.response.defer()
 		
+		def matchfilterfixer(text):
+			text = re.sub(r"^All", "The first", text)
+			text = re.sub(r" matches ", " match ", text)
+			return text
+
+		description_intro = None if (not matchfilter) else matchfilterfixer(matchfilter.localize())
 		matchfilter = await MatchFilter.init(matchfilter, inter)
 		player = matchfilter.player
 
 		match_id = await get_lastmatch_id(matchfilter, reverse=True)
 		match = await get_match(match_id)
-		await self.player_match_stats(player.steam_id, match, inter)
+		await self.player_match_stats(player.steam_id, match, inter, description_intro)
 
 	@commands.command()
 	async def postgame(self, inter: disnake.CmdInter, match_id):
@@ -767,20 +793,23 @@ class DotaStats(MangoCog):
 
 		matches = await opendota_query_filter(matchfilter)
 		if not matches:
-			raise UserError("I can't find any matches that match that filter")
+			raise MatchNotFoundError(matchfilter)
 
 		matches = sorted(matches, key=lambda m: m.get("start_time"), reverse=True)
 
 
 		embed = disnake.Embed()
 
-		embed.title = "Recent Matches"
+		embed.title = "Matches"
 		embed.url = f"https://www.opendota.com/players/{steam32}/matches"
 		if hero:
-			embed.title += f" as {hero.localized_name}"
-			embed.url += f"?hero_id={hero.id}"
 			if hero.color:
 				embed.color = disnake.Color(int(hero.color[1:], 16))
+		query_args = matchfilter.to_query_args()
+		if query_args:
+			embed.url += "?" + query_args
+
+		embed.description = matchfilter.localize(matches)
 
 		matches_image = await drawdota.draw_matches_table(matches, self.dota_game_strings)
 		matches_image = disnake.File(matches_image, "matches.png")
@@ -816,17 +845,22 @@ class DotaStats(MangoCog):
 
 		matches = await opendota_query_filter(matchfilter)
 		if not matches:
-			raise UserError("I can't find any matches that match that filter")
+			raise MatchNotFoundError(matchfilter)
 
 		matches = sorted(matches, key=lambda m: m.get("start_time"), reverse=True)
 
 
 		embed = disnake.Embed()
 
-		embed.title = "Recent Matches"
+		embed.title = "Matches"
 		embed.url = f"https://www.opendota.com/players/{steam32}/matches"
+		query_args = matchfilter.to_query_args()
+		if query_args:
+			embed.url += "?" + query_args
 
-		embed.description = "```\n"
+		embed.description = matchfilter.localize(matches)
+
+		embed.description += "\n\n```\n"
 		embed.description += "\n".join(list(map(lambda m: str(m["match_id"]), matches)))
 		embed.description += "\n```"
 
@@ -1045,10 +1079,7 @@ class DotaStats(MangoCog):
 		embed = disnake.Embed(color=self.embed_color)
 		embed_attachment = None
 
-		if do_downloaded:
-			embed.description = f"*The following are averages and percentages based on the last {len(player_matches)} parsed matches*"
-		else:
-			embed.description = ""
+		embed.description = matchfilter.localize(matches_info) + "\n"
 		embed.set_footer(text=f"To see the filtering options for this command, try \"/docs matchfilter\"")
 
 		matches_url = f"https://www.opendota.com/players/{steam32}/matches?{matchfilter.to_query_args(for_web_url=True)}"
@@ -1469,6 +1500,7 @@ class DotaStats(MangoCog):
 		----------
 		player: Either a steam32 id, a steam64 id, or an @mention of a discord user who has a steamid set
 		"""
+		await inter.response.defer()
 		if not player:
 			player = await DotaPlayer.from_author(inter)
 
@@ -1499,7 +1531,7 @@ class DotaStats(MangoCog):
 				role_totals[role] += value
 		role_totals = role_totals.values()
 		role_totals_avg = sum(role_totals) / len(role_totals)
-		role_totals_modifiers = list(map(lambda x: role_totals_avg / x, role_totals))
+		role_totals_modifiers = list(map(lambda x: role_totals_avg / (x or 1), role_totals))
 		for i in range(len(roles)):
 			role_scores[i] *= role_totals_modifiers[i]
 
@@ -1624,6 +1656,65 @@ class DotaStats(MangoCog):
 		embed.set_image(url=wrapped_image_url)
 
 		await ctx.send(embed=embed)
+
+	@commands.slash_command()
+	async def inventory(self, inter: disnake.CmdInter, matchfilter: MatchFilter = None):
+		"""Shows the most commonly bought items for each slot in your inventory
+
+		Parameters
+		----------
+		matchfilter: Specify how to filter these matches. To learn more, try '/docs Match Filter'
+		"""
+		matchfilter = await MatchFilter.init(matchfilter, inter)
+		await inter.response.defer()
+
+		item_slots = [ "item_0", "item_1", "item_2", "item_3", "item_4", "item_5" ]
+		matchfilter.add_projections(item_slots)
+
+		matches = await opendota_query_filter(matchfilter)
+
+		slot_item_counts = []
+		for slot in item_slots:
+			slot_item_counts.append({})
+		for match in matches:
+			for i in range(len(item_slots)):
+				item = match.get(item_slots[i])
+				if item is None or item == 0:
+					continue
+				if item not in slot_item_counts[i]:
+					slot_item_counts[i][item] = 0
+				slot_item_counts[i][item] += 1
+
+		slot_item_counts = list(map(lambda item_counts: sorted(item_counts.items(), key=lambda x: x[1], reverse=True), slot_item_counts))
+
+		# filter out duplicates (keep an item only in its best slot)
+		items_best_slots = {} # key: item_id, value: (slot, count)
+		for slot in range(len(slot_item_counts)):
+			for item, count in slot_item_counts[slot]:
+				if (item not in items_best_slots) or (items_best_slots[item][1] < count):
+					items_best_slots[item] = (slot, count)
+		for item, slot_count in items_best_slots.items():
+			slot = slot_count[0]
+			for i in range(len(slot_item_counts)):
+				if i != slot:
+					slot_item_counts[i] = list(filter(lambda item_count: item_count[0] != item, slot_item_counts[i]))
+
+		embed = disnake.Embed()
+		
+		embed.title = "Common Items"
+		embed.url = f"https://www.opendota.com/players/{matchfilter.player.steam_id}/matches"
+		query_args = matchfilter.to_query_args()
+		if query_args:
+			embed.url += "?" + query_args
+		
+		embed.description = matchfilter.localize()
+		embed.set_footer(text="The 3 most common items for each inventory slot. (At the end of the game)")
+
+		image = disnake.File(await drawdota.draw_item_slots(slot_item_counts), "items.png")
+		embed.set_image(url=f"attachment://{image.filename}")
+
+		await inter.send(embed=embed, file=image)
+				
 
 
 

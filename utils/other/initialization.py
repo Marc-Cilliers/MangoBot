@@ -10,13 +10,19 @@ from utils.command.commandargs import *
 from utils.tools.botdata import GuildInfo
 from utils.tools.globals import botdata, logger, settings
 from utils.tools.helpers import *
+from utils.tools.logger import init_logger
 
 # Note: This code used to be in mangobyte.py so look there for more history
 
 async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 	try:
+		await init_logger()
 		logger.event("startup", {
 			"message": "initialize started"
+		})
+		await bot.wait_until_ready()
+		logger.event("startup", {
+			"message": "bot is ready"
 		})
 		logger.info("Logged in as:\n{0} (ID: {0.id})".format(bot.user))
 		logger.info("Connecting to voice channels if specified in botdata.json ...")
@@ -31,12 +37,17 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 			type=disnake.ActivityType.playing,
 			start=datetime.datetime.utcnow())
 		await bot.change_presence(status=disnake.Status.dnd, activity=activity)
+		
+		logger.event("startup", {
+			"message": "building initialization message"
+		})
 
 		# now do voice channels and the rest!
 		minimum_channels_to_space = 50
 		voice_channels_per_minute_timing = 4
 		voice_channel_count = 0
 		for guildinfo in botdata.guildinfo_list():
+			await asyncio.sleep(0) # shard was complaining about being asleep, so doing this to resync with the event loop
 			if guildinfo.voicechannel is not None:
 				voice_channel_count += 1
 		expected_minutes = int(round(voice_channel_count / voice_channels_per_minute_timing))
@@ -51,9 +62,15 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 		if not settings.debug:
 			await appinfo.owner.send(message)
 		
+		logger.event("startup", {
+			"message": "starting periodic tasks"
+		})
+
 		# start periodic tasts
-		periodic_tasks = []
-		if settings.debug:
+		periodic_tasks = [
+			httpgetter.cache.cleanup_and_flush
+		]
+		if not settings.debug:
 			periodic_tasks.append(audio_cog.voice_channel_culler)
 		if settings.topgg:
 			periodic_tasks.append(general_cog.update_topgg)
@@ -67,6 +84,9 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 					await asyncio.sleep(5) # wait just a little bit before starting each. (so they dont all run at once on their schedules)
 				task.start()
 
+		logger.event("startup", {
+			"message": "starting voice channel connections"
+		})
 		# trigger the actual voice channel reconnecting
 		audio_cog = bot.get_cog("Audio")
 		channel_tasks = []
@@ -81,19 +101,43 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 	except Exception as e:
 		logger.error(traceback.format_exc())
 	finally:
+		timeout_seconds_to_wait = 60 * 5
 		if "TimeoutError" in channel_connector.exceptions_dict:
-			seconds_to_wait = 60 * 10
-			logger.error(f"there was a timeout error during initialization, waiting {seconds_to_wait} seconds before finishing")
-			await asyncio.sleep(seconds_to_wait)
+			logger.error(f"there was a timeout error during initialization, waiting {timeout_seconds_to_wait} seconds before finishing")
+			await asyncio.sleep(timeout_seconds_to_wait)
 
 		message = "__**Initialization Complete:**__\n"
 		message += channel_connector.status_as_string("voice channels connected") + "\n\n"
 		message += f"initialization took {initTimer}" + "\n"
 		message += f"Full startup took {startupTimer}"
 
-		logger.info(message + "\n")
-		if not settings.debug:
-			await appinfo.owner.send(message)
+		success = False
+		status_set = False
+		while not success:
+			try:
+				logger.info("attempting to finish initialization")
+				if not status_set:
+					game = disnake.Activity(
+						name="DOTA 3 [/help]",
+						type=disnake.ActivityType.playing,
+						start=datetime.datetime.utcnow())
+					await bot.change_presence(status=disnake.Status.online, activity=game)
+					status_set = True
+				
+				if not settings.debug:
+					await appinfo.owner.send(message)
+					logger.info(message + "\n")
+				
+				logger.event("startup", {
+					"message": "initialize finished"
+				})
+				success = True
+			except Exception as e:
+				logger.event("startup", {
+					"message": f"initialization timeout error. Retrying again in {timeout_seconds_to_wait} sec"
+				})
+				logger.error(traceback.format_exc())
+				await asyncio.sleep(timeout_seconds_to_wait)
 
 		game = disnake.Activity(
 			name="with Renier's fat, juicy c...",

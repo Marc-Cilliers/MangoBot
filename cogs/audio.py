@@ -72,6 +72,12 @@ class AudioPlayer:
 	async def update_guild(self):
 		self.guild = await self.bot.fetch_guild(self.guild.id)
 
+	# re-assigns a fresh server object (hotfix to solve library issue)
+	async def manually_kill_voice_client(self):
+		logger.warn(f"manual kill info: guild:{self.guild_id}")
+		logger.warn(f"manual kill info: channel info: (type:{type(self.voice.channel)}) attributes: {dir(self.voice.channel)}")
+		self.bot._connection._remove_voice_client(self.guild_id)
+
 	# connects to a voice channel
 	async def connect(self, channel):
 		if not isinstance(channel, disnake.VoiceChannel):
@@ -85,7 +91,10 @@ class AudioPlayer:
 			logger.info(f"finished connect to: {channel.id}")
 		elif voice.channel and voice.channel.id == channel.id:
 			logger.info(f"doin' a disconnect and reconnect for: {channel.id}")
-			await voice.disconnect(force=True)
+			try:
+				await voice.disconnect(force=True)
+			except AttributeError:
+				await self.manually_kill_voice_client()
 			await asyncio.sleep(2)
 			await channel.connect()
 			logger.info(f"finished reconnect for: {channel.id}")
@@ -97,7 +106,7 @@ class AudioPlayer:
 
 	def done_talking(self, error):
 		if error:
-			logger.info(f"Error on voice.play: {error.message}")
+			logger.error(f"Error on voice.play: {error}")
 		if not self.clipqueue.empty():
 			coro = self.play_next_clip()
 			fut = asyncio.run_coroutine_threadsafe(coro, self.bot.loop)
@@ -121,7 +130,7 @@ class AudioPlayer:
 			self.voice.play(disnake.FFmpegPCMAudio(clip.audiopath), after=self.done_talking)
 		except disnake.errors.ClientException as e:
 			if str(e) == "Not connected to voice.":
-				raise UserError("Error playing clip. Try doing `/resummon`.")
+				raise UserError("Error playing clip. Try doing `/summon`.")
 			else:
 				raise
 
@@ -230,7 +239,7 @@ class Audio(MangoCog):
 				return audioplayer
 
 		if error_on_none:
-			raise AudioPlayerNotFoundError(f"I'm not in a voice channel on this server/guild. Have an admin do `{botdata.command_prefix(ctx_inter)}summon` to put me in one.")
+			raise AudioPlayerNotFoundError(f"I'm not in a voice channel on this server/guild. Have an admin do `/summon` to put me in one.")
 		else:
 			return None
 

@@ -17,11 +17,13 @@ Mangobyte has a feature to allow users to be very specific when requesting infor
 - mid/safe/off/roaming (*lane*)
 - 5 days/2 weeks/1 year
 - limit/count `<number>` (*number of matches*)
+- skip/offset `<number>` (*skip this many matches*)
 - with `<player>` (*they were in the match, not necessarily on your team*)
 - without `<player>`
 - as `<hero>`
 - against/vs `<hero>`
 - with `<hero>`
+- us west/us east (etc.)
 - `<item>` (*the exact name of the item in your inventory at end of game*)
 - since `<patch>` (*gets matches since that patch was released*)
 - `<patch>` (*gets matches during this patch*)
@@ -31,6 +33,7 @@ You can also specify to get matches for someone other than yourself by just @men
 ### Compatible Commands:
 <!-- MATCH_FILTER_COMMANDS_START -->
 `/firstmatch`
+`/inventory`
 `/lm`
 `/matchids`
 `/playerstats`

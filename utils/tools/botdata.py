@@ -87,14 +87,14 @@ userinfo_variables = [
 		"key": "intro",
 		"default": "local:helloits",
 		"type": types.ShortClip,
-		"description": "This sets the clip that will play whenever you join a voice channel that mangobyte is in. Note that this clip cannot be longer than 4.5 seconds\n\nTo make it so no clip plays when you join the channel, try setting this to `none`, `silent`, `off`, or `disable`",
+		"description": "This sets the clip that will play whenever you join a voice channel that mangobyte is in. Note that this clip cannot be longer than 4.5 seconds\n\nTo see a bunch of information on the types of clips available and the format of a clip id, try running the command `/docs Clips`\n\nTo make it so no clip plays when you join the channel, try setting this to `none`, `silent`, `off`, or `disable`",
 		"example": "local:math"
 	},
 	{
 		"key": "outro",
 		"default": "local:farewell",
 		"type": types.ShortClip,
-		"description": "This sets the clip that will play whenever you leave a voice channel that mangobyte is in. Note that this clip cannot be longer than 4.5 seconds\n\nTo make it so no clip plays when you join the channel, try setting this to `none`, `silent`, `off`, or `disable`",
+		"description": "This sets the clip that will play whenever you leave a voice channel that mangobyte is in. Note that this clip cannot be longer than 4.5 seconds\n\nTo see a bunch of information on the types of clips available and the format of a clip id, try running the command `/docs Clips`\n\nTo make it so no clip plays when you join the channel, try setting this to `none`, `silent`, `off`, or `disable`",
 		"example": "dota:troll_warlord_troll_lose_03"
 	},
 	{
@@ -270,6 +270,13 @@ guildinfo_variables = [
 		"type": types.Boolean,
 		"description": "Whether or not the bot should restrict the usage of `/summon` and `/unsummon` to bot admins.",
 		"example": "disable"
+	},
+	{
+		"key": "deprecationhints",
+		"default": True,
+		"type": types.Boolean,
+		"description": "Disabling this will disable messages like:\n`?play` has been deprecated. Try `/play local` instead.",
+		"example": "disable"
 	}
 ]
 
@@ -328,14 +335,13 @@ class BotData:
 			self.json_data = self.defaults
 			self.save_data()
 		else:
-			current = read_json(self.path)
-			if current.keys() != self.defaults.keys():
-				for key in self.defaults.keys():
-					if key not in current.keys():
-						current[key] = self.defaults[key]
-						logger.info("Adding " + str(key) + " field to botdata.json")
-				write_json(self.path, current)
 			self.json_data = read_json(self.path)
+			if self.json_data.keys() != self.defaults.keys():
+				for key in self.defaults.keys():
+					if key not in self.json_data.keys():
+						self.json_data[key] = self.defaults[key]
+						logger.info("Adding " + str(key) + " field to botdata.json")
+				self.save_data()
 
 	def __getitem__(self, key):
 		if key not in self.defaults:
@@ -396,6 +402,7 @@ class BotData:
 		return self.command_prefix_guild(message.guild)
 
 	def command_prefix_guild(self, guild):
+		return "/" # all user-facing commands are moved to slash commands
 		guildinfo = self.guildinfo(guild)
 		if guildinfo is not None:
 			return guildinfo.prefix
