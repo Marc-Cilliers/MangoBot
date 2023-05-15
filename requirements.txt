@@ -4,6 +4,7 @@ colorgram.py==1.1.0
 gTTS>=2.2.1
 gTTS-token>=1.1.4
 SQLAlchemy==1.4.40
+sqlalchemy-utils==0.41.1
 Pillow>=9.0.1
 youtube-dl>=2018.8.28
 dotabase>=7.4.0
