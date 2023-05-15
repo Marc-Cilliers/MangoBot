@@ -217,7 +217,7 @@ async def get_talents_image(abilities, hero_id):
         abilities = [abilities]
     if abilities is None:
         abilities = []
-        talent_slots = []
+    talent_slots = []
     for ability_id in abilities:
         if ability_id not in ability_infos:
             continue
