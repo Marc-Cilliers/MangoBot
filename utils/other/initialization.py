@@ -70,8 +70,8 @@ async def initialize(bot: commands.Bot, startupTimer: SimpleTimer):
 		periodic_tasks = [
 			httpgetter.cache.cleanup_and_flush
 		]
-		if not settings.debug:
-			periodic_tasks.append(audio_cog.voice_channel_culler)
+		# if not settings.debug:
+		# 	periodic_tasks.append(audio_cog.voice_channel_culler)
 		if settings.topgg:
 			periodic_tasks.append(general_cog.update_topgg)
 		if settings.infodump_path:
