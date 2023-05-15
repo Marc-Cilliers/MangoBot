@@ -450,7 +450,8 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         TextCell(player.get("deaths")),
         TextCell(player.get("assists")),
         TextCell(f"{bench['pct']}%", color=bench['color']),
-        ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48),
+		TextCell(player.get("gold_per_min"))
+        # ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48), # revisit this
     ]
 
     # add lone druid items row
@@ -583,7 +584,7 @@ async def draw_match_table(match):
         TextCell("D", horizontal_align="center"),
         TextCell("A", horizontal_align="center"),
         TextCell("BM"),
-        TextCell("Rank")
+        TextCell("GPM")
     ]
     if is_parsed:
         headers.extend([
