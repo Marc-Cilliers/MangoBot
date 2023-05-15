@@ -234,9 +234,11 @@ async def get_talents_image(abilities, hero_id):
         return Image.open(filename)
     filename = await httpgetter.cache.new(uri, "png")
 
-    image = Image.open(settings.resource("images/talents/talent_background.png"))
+    image = Image.open(settings.resource(
+        "images/talents/talent_background.png"))
     for slot in talent_slots:
-        slot_image = Image.open(settings.resource(f"images/talents/talent_{slot}.png"))
+        slot_image = Image.open(settings.resource(
+            f"images/talents/talent_{slot}.png"))
         image = paste_image(image, slot_image)
 
     image.save(filename, format="PNG")
@@ -383,8 +385,8 @@ def won_lane(curr_player, players):
 
 
 def get_lane(player):
-    lane_dict = { 1: "Bot", 3: "Top", None: "" }
-    lane_role_dict = { 1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: "" }
+    lane_dict = {1: "Bot", 3: "Top", None: ""}
+    lane_role_dict = {1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: ""}
     if player.get('is_roaming'):
         return "Roam"
     elif player.get('lane') in lane_dict:
@@ -434,7 +436,8 @@ def get_benchmark(benchmarks):
 
 
 async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents, players):
-    draw_bear_row = player["hero_id"] == 80 and len(player.get("additional_units") or []) > 0
+    draw_bear_row = player["hero_id"] == 80 and len(
+        player.get("additional_units") or []) > 0
     bench = get_benchmark(player.get('benchmarks'))
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
 
@@ -449,6 +452,20 @@ async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents
         TextCell(f"{bench['pct']}%", color=bench['color']),
         ImageCell(img=await get_rank_image(rank_tier, leaderboard_rank), height=48),
     ]
+
+    # add lone druid items row
+    if draw_bear_row:
+        bear_unit = player["additional_units"][0]
+        bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
+        bear_row = [
+            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
+            create_party_cell(match, player, can_be_top=False),
+            ImageCell(img=bear_image, height=48),
+        ]
+        bear_row.extend([EmptyCell()] * (len(row) - (len(bear_row) + 1)))
+        bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
+        table.add_row(bear_row)
+        
     if is_parsed:
         row.extend([
             TextCell(player.get("actions_per_min")),
@@ -462,25 +479,28 @@ async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents
         def ad_ability_filter(ability_id):
             ability = ability_infos[ability_id]["entity"]
             return not (ability.is_talent or ("ad_special_bonus" in ability.name))
-        abilities = filter(ad_ability_filter, player.get("ability_upgrades_arr"))
+        abilities = filter(ad_ability_filter,
+                           player.get("ability_upgrades_arr"))
         abilities = list(set(abilities))
-        abilities = sorted(abilities, key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20)
+        abilities = sorted(
+            abilities, key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20)
         if len(abilities) > 4:
             abilities = abilities[:4]
         row[3:3] = [
             ImageCell(img=await get_spell_images(abilities), height=48)
         ]
-                
+
     if (player.get("leaver_status", 0) or 0) > 1:
         for cell in row[2:]:
             cell.background = "#6d2426"
 
     table.add_row(row)
 
+
 def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
     if (player.get("party_size", 0) or 0) <= 1:
         return EmptyCell()
-    team_colors = [  "purple", "turquoise", "orange", "blue" ]
+    team_colors = ["purple", "turquoise", "orange", "blue"]
     all_teams = []
     player_slots_in_team = []
     for p in match["players"]:
@@ -503,29 +523,39 @@ def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
     if position == "middle":
         return ColorCell(width=8, color=cell_color)
     # custom cell renderer for some curviness
+
     def custom_cell_render(draw, image, x, y, width, height):
         corner = Image.new('RGBA', (width, width), (0, 0, 0, 0))
         draw_corner = ImageDraw.Draw(corner)
-        draw_corner.pieslice((0, 0, width * 2, width * 2), 180, 270, fill=cell_color)
+        draw_corner.pieslice((0, 0, width * 2, width * 2),
+                             180, 270, fill=cell_color)
         if position == "top":
-            draw.rectangle([x, y + width, x + width, y + height], fill=cell_color)
+            draw.rectangle(
+                [x, y + width, x + width, y + height], fill=cell_color)
             image = paste_image(image, corner.rotate(0), x, y)
         elif position == "bottom":
-            draw.rectangle([x, y, x + width, y + height - width], fill=cell_color)
-            image = paste_image(image, corner.rotate(90), x, y + height - width)
+            draw.rectangle(
+                [x, y, x + width, y + height - width], fill=cell_color)
+            image = paste_image(image, corner.rotate(90),
+                                x, y + height - width)
         return image, draw
 
     return CustomRenderCell(width=8, render_func=custom_cell_render)
 
 # gets the hero image and adds a disconenct icon if applicable
+
+
 async def get_hero_player_status_image(player):
     image = await get_hero_image(player["hero_id"])
     if (player.get("leaver_status", 0) or 0) <= 1:
         return image
     disconnect_image = await get_url_image(vpkurl + "/panorama/images/hud/reborn/icon_disconnect_png.png")
-    disconnect_image = disconnect_image.resize((image.width, int((image.width / disconnect_image.width) * disconnect_image.height)), Image.ANTIALIAS)
-    image = paste_image(image, disconnect_image, 0, (image.height // 2) - (disconnect_image.height // 2))
+    disconnect_image = disconnect_image.resize((image.width, int(
+        (image.width / disconnect_image.width) * disconnect_image.height)), Image.ANTIALIAS)
+    image = paste_image(image, disconnect_image, 0,
+                        (image.height // 2) - (disconnect_image.height // 2))
     return image
+
 
 def truncate(text, max_size):
     if len(text) <= max_size:
@@ -533,20 +563,6 @@ def truncate(text, max_size):
     text = text[:max_size - 3]
     text = re.sub(r"[\.\s]+$", "", text)
     return text + "..."
-
-
-    # add lone druid items row
-    if draw_bear_row:
-        bear_unit = player["additional_units"][0]
-        bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
-        bear_row = [
-            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
-            create_party_cell(match, player, can_be_top=False),
-            ImageCell(img=bear_image, height=48),
-        ]
-        bear_row.extend([EmptyCell()] * (len(row) - (len(bear_row) + 1)))
-        bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
-        table.add_row(bear_row)
 
 
 async def draw_match_table(match):
@@ -692,7 +708,8 @@ def optimize_gif(uri, filename):
     i = 0
 
     while file_size >= size_limit and i < len(optimization):
-        output = run_command(["gifsicle", "--conserve-memory", filename, "-o", filename] + optimization[i])
+        output = run_command(
+            ["gifsicle", "--conserve-memory", filename, "-o", filename] + optimization[i])
         file_size = os.path.getsize(filename) / 1000000
         logger.info(f"bytes: {file_size} MB")
         i += 1
@@ -1105,10 +1122,10 @@ async def draw_matches_table(matches, game_strings):
 async def draw_hero_talents(hero):
     talents = list(map(lambda t: t.ability.localized_name, hero.talents))
     talent_rows = [
-        [ talents[7], talents[6] ],
-        [ talents[5], talents[4] ],
-        [ talents[3], talents[2] ],
-        [ talents[1], talents[0] ]
+        [talents[7], talents[6]],
+        [talents[5], talents[4]],
+        [talents[3], talents[2]],
+        [talents[1], talents[0]]
     ]
     image = Image.open(settings.resource("images/talents.png"))
     draw = ImageDraw.Draw(image)
@@ -1219,7 +1236,8 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
     grey_color = "#BBBBBB"
     table = Table(background=discord_color2)
 
-    table.add_row([ColorCell(color=discord_color1, height=border_size) for i in range(column_count)])
+    table.add_row([ColorCell(color=discord_color1, height=border_size)
+                  for i in range(column_count)])
     first = True
     for card in ordered_cards:
         cost = ""
@@ -1236,7 +1254,8 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
         if first:
             first = False
         else:
-            table.add_row([ColorCell(color=discord_color2, height=2) for i in range(column_count)])
+            table.add_row([ColorCell(color=discord_color2, height=2)
+                          for i in range(column_count)])
         table.add_row([
             ImageCell(img=await get_url_image(card.mini_image), height=48),
             ImageCell(img=await get_url_image(card.type_image), height=48),
@@ -1249,7 +1268,8 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
             cell.background = card_color.hex
     image = table.render()
 
-    border_image = Image.new('RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
+    border_image = Image.new(
+        'RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
     image = paste_image(border_image, image, border_size, 0)
 
     image.save(filename, format="PNG")
@@ -1462,7 +1482,7 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
 
 
 async def draw_itemrecipe(main_item, components, products):
-    item_ids = [ main_item.id ]
+    item_ids = [main_item.id]
     item_ids.extend(map(lambda i: i.id, components))
     item_ids.extend(map(lambda i: i.id, products))
     item_ids = "_".join(map(str, item_ids))
@@ -1473,12 +1493,12 @@ async def draw_itemrecipe(main_item, components, products):
 
     filename = await httpgetter.cache.new(uri, "png")
 
-    line_ducking = 5 # how many pixels into the main item to hide the line
-    inner_padding = 60 # y padding between item rows
-    outer_padding = 10 # padding around the whole thing
-    item_size = (88, 64) # the size of an item
-    max_spacing = 175 # the max spacing in between item centers
-    max_items_per_row = 5 # helps determine default image width
+    line_ducking = 5  # how many pixels into the main item to hide the line
+    inner_padding = 60  # y padding between item rows
+    outer_padding = 10  # padding around the whole thing
+    item_size = (88, 64)  # the size of an item
+    max_spacing = 175  # the max spacing in between item centers
+    max_items_per_row = 5  # helps determine default image width
 
     max_items_per_row = max(max_items_per_row, len(components), len(products))
 
@@ -1488,7 +1508,8 @@ async def draw_itemrecipe(main_item, components, products):
     if products:
         rows += 1
 
-    base_size = (max_items_per_row * item_size[0] + outer_padding * 2, (rows * (inner_padding + item_size[1])) - inner_padding + (2 * outer_padding))
+    base_size = (max_items_per_row * item_size[0] + outer_padding * 2, (rows * (
+        inner_padding + item_size[1])) - inner_padding + (2 * outer_padding))
     base_image = Image.new('RGBA', base_size, (0, 0, 0, 0))
 
     rows = []
@@ -1507,10 +1528,11 @@ async def draw_itemrecipe(main_item, components, products):
             spacing = 0
             start_x = int((base_size[0] / 2) - (item_size[0] / 2))
         else:
-            spacing = int((base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1))
+            spacing = int(
+                (base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1))
             start_x = int(outer_padding)
         if spacing > max_spacing:
-            start_x += int(((spacing - max_spacing)* (len(row) - 1)) / 2)
+            start_x += int(((spacing - max_spacing) * (len(row) - 1)) / 2)
             spacing = max_spacing
         start_y = int(outer_padding + (i * (inner_padding + item_size[1])))
 
@@ -1549,11 +1571,13 @@ async def draw_itemrecipe(main_item, components, products):
             image = await get_item_image(row[j].id)
             base_image.paste(image, row_points[i][j])
 
-    base_image = base_image.resize((base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS)
+    base_image = base_image.resize(
+        (base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS)
 
     base_image.save(filename, format="PNG")
 
     return filename
+
 
 async def draw_heroabilities(abilities):
     abilities = sorted(abilities, key=lambda a: a.slot)
@@ -1617,11 +1641,11 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
     item_size = (88, 64)
     item_size_smaller = (int(item_size[0] / 2), int(item_size[1] / 2))
     item_rows = [
-        [(0, 1),(0, 2), (1, 1),(1, 2), (2, 1),(2, 2)],
-        [(0, 0),        (1, 0),        (2, 0)       ],
+        [(0, 1), (0, 2), (1, 1), (1, 2), (2, 1), (2, 2)],
+        [(0, 0),        (1, 0),        (2, 0)],
         None,
-        [(3, 0),        (4, 0),        (5, 0)       ],
-        [(3, 1),(3, 2), (4, 1),(4, 2), (5, 1),(5, 2)],
+        [(3, 0),        (4, 0),        (5, 0)],
+        [(3, 1), (3, 2), (4, 1), (4, 2), (5, 1), (5, 2)],
     ]
     blank_item_image = await get_url_image(f"{vpkurl}/panorama/images/items/emptyitembg_png.png")
     border_gap = 8
@@ -1643,7 +1667,8 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
 
         is_dense_row = len(images) == 6
         gap_size = (2 * border_gap) if is_dense_row else border_gap
-        image_row = Image.new("RGBA", ((item_size[0] * len(images)) + (gap_size * 2), item_size[1]))
+        image_row = Image.new(
+            "RGBA", ((item_size[0] * len(images)) + (gap_size * 2), item_size[1]))
         x = 0
         for i in range(len(images)):
             image_row.paste(images[i], (x, 0))
@@ -1652,11 +1677,12 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
                 x += gap_size
 
         if len(images) == 6:
-            image_row = image_row.resize(((item_size_smaller[0] * len(images) + (border_gap * 2)), item_size_smaller[1]), Image.ANTIALIAS)
-        
+            image_row = image_row.resize(
+                ((item_size_smaller[0] * len(images) + (border_gap * 2)), item_size_smaller[1]), Image.ANTIALIAS)
+
         table.add_row([ImageCell(img=image_row)])
     image = table.render()
-    
+
     fp = BytesIO()
     image.save(fp, format="PNG")
     fp.seek(0)
