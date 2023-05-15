@@ -435,7 +435,7 @@ def get_benchmark(benchmarks):
     return {"pct": overall, "color": color}
 
 
-async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents, players):
+async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents):
     draw_bear_row = player["hero_id"] == 80 and len(
         player.get("additional_units") or []) > 0
     bench = get_benchmark(player.get('benchmarks'))
@@ -458,14 +458,15 @@ async def add_player_row(table, player, is_parsed, is_ability_draft, has_talents
         bear_unit = player["additional_units"][0]
         bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
         bear_row = [
-            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
+            ColorCell(width=8, color=(
+                "green" if player["isRadiant"] else "red")),
             create_party_cell(match, player, can_be_top=False),
             ImageCell(img=bear_image, height=48),
         ]
         bear_row.extend([EmptyCell()] * (len(row) - (len(bear_row) + 1)))
         bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
         table.add_row(bear_row)
-        
+
     if is_parsed:
         row.extend([
             TextCell(player.get("actions_per_min")),
@@ -605,12 +606,12 @@ async def draw_match_table(match):
     # Do players
     for player in match["players"]:
         if player['isRadiant']:
-            await add_player_row(table, player, is_parsed, is_ability_draft, has_talents, match["players"])
+            await add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents)
     table.add_row([ColorCell(color=discord_color1, height=5)
                   for i in range(len(headers))])
     for player in match["players"]:
         if not player['isRadiant']:
-            await add_player_row(table, player, is_parsed, is_ability_draft, has_talents, match["players"])
+            await add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents)
     return table.render()
 
 
