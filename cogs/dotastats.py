@@ -627,7 +627,7 @@ class DotaStats(MangoCog):
 		streamer = next(p for p in match['players']
 										if p['account_id'] == steam_id)
 		streamer_win = streamer["win"] != 0
-		title = 'falleN WON!' if streamer_win else 'falleN LOST!'
+		title = 'Fallen WON!' if streamer_win else 'Fallen LOST!'
 		embed_color = self.win_color if streamer_win else self.lose_color
 		# story = await self.tell_postgame_story(match, streamer['isRadiant'], streamer_win)
 		duration = get_pretty_duration(match['duration'], postfix=False)
@@ -636,9 +636,11 @@ class DotaStats(MangoCog):
 		lobby_type = self.dota_game_strings.get(
 				f"lobby_type_{match.get('lobby_type')}", "Unknown")
 		if lobby_type == "Normal":
-				lobby_type = ""
+				lobby_type = "Unranked"
+		if lobby_type == "Ranked":
+				lobby_type = f"**{lobby_type}**"
 
-		description = (f"His **{lobby_type}**{game_mode} match ended in {duration} \n\n")
+		description = (f"His {lobby_type} {game_mode} match ended in {duration} \n\n")
 
 		embed = disnake.Embed(title=title,
 													description=description,
