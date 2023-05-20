@@ -459,10 +459,15 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         bear_unit = player["additional_units"][0]
         bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
         bear_row = [
-            ColorCell(width=8, color=(
-                "green" if player["isRadiant"] else "red")),
-            create_party_cell(match, player, can_be_top=False),
+            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
             ImageCell(img=bear_image, height=48),
+            EmptyCell(),
+            EmptyCell(),
+            EmptyCell(),
+            EmptyCell(),
+            EmptyCell(),
+            EmptyCell(),
+            EmptyCell(),
         ]
         bear_row.extend([EmptyCell()] * (len(row) - (len(bear_row) + 1)))
         bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
@@ -497,6 +502,8 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
             cell.background = "#6d2426"
 
     table.add_row(row)
+    if draw_bear_row:
+        table.add_row(bear_row)
 
 
 def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
