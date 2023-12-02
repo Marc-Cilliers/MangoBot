@@ -410,6 +410,9 @@ async def get_rank_info(account_id):
 
 
 def get_benchmark(benchmarks):
+    if benchmarks is None:
+        return None
+
     keys = ['gold_per_min', 'xp_per_min', 'kills_per_min',
             'last_hits_per_min', 'hero_damage_per_min', 'hero_healing_per_min',
             'tower_damage', 'stuns_per_min', 'lhten']
@@ -439,7 +442,8 @@ def get_benchmark(benchmarks):
 async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents):
     draw_bear_row = player["hero_id"] == 80 and len(
         player.get("additional_units") or []) > 0
-    bench = get_benchmark(player.get('benchmarks')) if player.get('benchmarks') else None
+    bench = get_benchmark(player.get('benchmarks'))
+    logger.info("BENCH: {0}".format(bench))
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
 
     row = [
@@ -453,7 +457,7 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         TextCell(player.get("assists")),
     ]
 
-    if bench:
+    if bench is not None:
         row.extend([
             TextCell(f"{bench['pct']}%", color=bench['color'])
         ])
