@@ -454,7 +454,9 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
     ]
 
     if bench:
-        row.push(TextCell(f"{bench['pct']}%", color=bench['color']))
+        row.extend([
+            TextCell(f"{bench['pct']}%", color=bench['color'])
+        ])
 
     # add lone druid items row
     if draw_bear_row:
