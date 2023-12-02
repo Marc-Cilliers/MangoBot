@@ -439,7 +439,7 @@ def get_benchmark(benchmarks):
 async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents):
     draw_bear_row = player["hero_id"] == 80 and len(
         player.get("additional_units") or []) > 0
-    bench = get_benchmark(player.get('benchmarks'))
+    bench = get_benchmark(player.get('benchmarks')) if player.get('benchmarks') else None
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
 
     row = [
@@ -451,8 +451,10 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         TextCell(player.get("kills")),
         TextCell(player.get("deaths")),
         TextCell(player.get("assists")),
-        TextCell(f"{bench['pct']}%", color=bench['color']),
     ]
+
+    if bench:
+        row.push(TextCell(f"{bench['pct']}%", color=bench['color']))
 
     # add lone druid items row
     if draw_bear_row:
