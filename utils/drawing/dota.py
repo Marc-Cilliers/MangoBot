@@ -1,6 +1,5 @@
 import math
 import os
-from queue import Empty
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -72,8 +71,8 @@ item_infos = {}
 ability_infos = {}
 
 def get_text_size(font, text):
-	bbox = font.getbbox(text)
-	return [ bbox[2] - bbox[0], bbox[3] - bbox[1] ]
+    bbox = font.getbbox(text)
+    return [ bbox[2] - bbox[0], bbox[3] - bbox[1] ]
 
 def get_item_color(item, default=None):
     if item is None:
@@ -194,15 +193,13 @@ async def get_level_image(level):
     draw.ellipse(outer_circle, fill=discord_color3)
     draw.ellipse(inner_circle, fill=discord_color4)
 
-	font_adjustment_y = -4
-	level = str(level)
-	font = get_table_font(24)
-	font_size = get_text_size(font, level)
-	x_loc = (image.size[0] / 2) - (font_size[0] / 2)
-	y_loc = (image.size[1] / 2) - (font_size[1] / 2)
-	draw.text((x_loc, y_loc + font_adjustment_y), level, font=font, fill=faded_yellow_color)
-
-	return image
+    font_adjustment_y = -4
+    level = str(level)
+    font = get_table_font(24)
+    font_size = get_text_size(font, level)
+    x_loc = (image.size[0] / 2) - (font_size[0] / 2)
+    y_loc = (image.size[1] / 2) - (font_size[1] / 2)
+    draw.text((x_loc, y_loc + font_adjustment_y), level, font=font, fill=faded_yellow_color)
 
     return image
 
@@ -519,20 +516,20 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
 
 
 def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
-	if (player.get("party_size", 0) or 0) <= 1:
-		return EmptyCell()
-	team_colors = [  "purple", "turquoise", "orange", "blue" ]
-	all_teams = []
-	player_slots_in_team = []
-	for p in match["players"]:
-		if (p.get("party_size", 0) or 0) > 1 and p.get("party_id") not in all_teams:
-			all_teams.append(p.get("party_id"))
-		if p.get("party_id") == player.get("party_id"):
-			player_slots_in_team.append(p["player_slot"])
-	color_index = all_teams.index(player.get("party_id"))
-	if color_index >= len(team_colors):
-		color_index = len(team_colors) - 1
-	cell_color = team_colors[color_index]
+    if (player.get("party_size", 0) or 0) <= 1:
+        return EmptyCell()
+    team_colors = [  "purple", "turquoise", "orange", "blue" ]
+    all_teams = []
+    player_slots_in_team = []
+    for p in match["players"]:
+        if (p.get("party_size", 0) or 0) > 1 and p.get("party_id") not in all_teams:
+            all_teams.append(p.get("party_id"))
+        if p.get("party_id") == player.get("party_id"):
+            player_slots_in_team.append(p["player_slot"])
+    color_index = all_teams.index(player.get("party_id"))
+    if color_index >= len(team_colors):
+        color_index = len(team_colors) - 1
+    cell_color = team_colors[color_index]
 
     if player_slots_in_team[0] == player["player_slot"]:
         position = "top"
@@ -743,14 +740,14 @@ def optimize_gif(uri, filename):
 
 
 def place_icon_on_map(map_image, icon, x, y):
-	map_padding_from_733_patch = 10
-	map_coord_padding = 64 - map_padding_from_733_patch
-	map_coord_size = 128 + (2 * map_padding_from_733_patch)
+    map_padding_from_733_patch = 10
+    map_coord_padding = 64 - map_padding_from_733_patch
+    map_coord_size = 128 + (2 * map_padding_from_733_patch)
 
-	scale = map_image.width / map_coord_size
-	x = (x - map_coord_padding) * scale
-	y = (map_coord_size - (y - map_coord_padding)) * scale
-	return paste_image(map_image, icon, int(x - (icon.width / 2)), int(y - (icon.height / 2)))
+    scale = map_image.width / map_coord_size
+    x = (x - map_coord_padding) * scale
+    y = (map_coord_size - (y - map_coord_padding)) * scale
+    return paste_image(map_image, icon, int(x - (icon.width / 2)), int(y - (icon.height / 2)))
 
 # wraps the main gif creation code so it doesnt block
 
@@ -891,24 +888,24 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
     if reverse:
         time_range = range(end_time, start_time - 1, -1)
 
-	for t in time_range:
-		image = map_image.copy()
-		for building in buildings:
-			if t < building.get("death", t + 1):
-				image = place_icon_on_map(image, building["icon"], building["x"], building["y"])
-		for player in players:
-			icon = player["icon"].convert("LA") if player[t]["dead"] else player["icon"]
-			image = place_icon_on_map(image, icon, player[t]["x"], player[t]["y"])
-		for rune in runes.get(t, {}):
-			rune = runes[t][rune]
-			if rune["type"] in rune_icons:
-				image = place_icon_on_map(image, rune_icons[rune["type"]], rune["x"], rune["y"])
+    for t in time_range:
+        image = map_image.copy()
+        for building in buildings:
+            if t < building.get("death", t + 1):
+                image = place_icon_on_map(image, building["icon"], building["x"], building["y"])
+        for player in players:
+            icon = player["icon"].convert("LA") if player[t]["dead"] else player["icon"]
+            image = place_icon_on_map(image, icon, player[t]["x"], player[t]["y"])
+        for rune in runes.get(t, {}):
+            rune = runes[t][rune]
+            if rune["type"] in rune_icons:
+                image = place_icon_on_map(image, rune_icons[rune["type"]], rune["x"], rune["y"])
 
-		image = paste_image(image, clock_bg_image, (image.width // 2) - (clock_bg_image.width // 2), 0)
-		draw = ImageDraw.Draw(image)
-		clock_text = get_pretty_time(abs(t))
-		clock_pos = ((image.width // 2) - (get_text_size(font, clock_text)[0] // 2), -1)		
-		draw.text(clock_pos, clock_text, font=font, fill="#ffffff")
+        image = paste_image(image, clock_bg_image, (image.width // 2) - (clock_bg_image.width // 2), 0)
+        draw = ImageDraw.Draw(image)
+        clock_text = get_pretty_time(abs(t))
+        clock_pos = ((image.width // 2) - (get_text_size(font, clock_text)[0] // 2), -1)		
+        draw.text(clock_pos, clock_text, font=font, fill="#ffffff")
 
         image.save(process.stdin, "gif")
         image.close()
@@ -948,7 +945,7 @@ async def create_dota_emoticon(emoticon, url):
                                     "--loopcount=0",
                                     "--transparent", "0",
                                     "-", "-o", filename], stdin=subprocess.PIPE, bufsize=-1)
-    except OSError as e:
+    except OSError:
         raise UserError(
             "Whoever setup this mangobyte doesn't have gifsicle installed")
 
@@ -1368,18 +1365,18 @@ def get_poly_points(n, radius, origin=(0, 0), radius_percentages=None):
 
 
 def draw_poly_label(draw, point, center, text):
-	font = ImageFont.truetype(settings.resource("images/arial_unicode_bold.ttf"), 16)
-	font_size = get_text_size(font, text)
-	point = list(point)
-	if point[0] < center[0]:
-		point[0] -= font_size[0]
-	if point[1] < center[1]:
-		point[1] -= font_size[1]
-	if point[0] == center[0]:
-		point[0] -= font_size[0] / 2
-	if point[1] == center[1]:
-		point[1] -= font_size[1] / 2
-	draw.text(tuple(point), text, font=font, fill="#ffffff")
+    font = ImageFont.truetype(settings.resource("images/arial_unicode_bold.ttf"), 16)
+    font_size = get_text_size(font, text)
+    point = list(point)
+    if point[0] < center[0]:
+        point[0] -= font_size[0]
+    if point[1] < center[1]:
+        point[1] -= font_size[1]
+    if point[0] == center[0]:
+        point[0] -= font_size[0] / 2
+    if point[1] == center[1]:
+        point[1] -= font_size[1] / 2
+    draw.text(tuple(point), text, font=font, fill="#ffffff")
 
 def draw_polygraph(values, labels):
     size = (500, 500)
