@@ -508,7 +508,7 @@ async def add_player_row(
     draw_bear_row = (
         player["hero_id"] == 80 and len(player.get("additional_units") or []) > 0
     )
-    bench = get_benchmark(player.get("benchmarks"))
+    # bench = get_benchmark(player.get("benchmarks"))
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get("account_id"))
 
     row = [
@@ -522,8 +522,8 @@ async def add_player_row(
         TextCell(player.get("assists")),
     ]
 
-    if bench is not None:
-        row.extend([TextCell(f"{bench['pct']}%", color=bench["color"])])
+    # if bench is not None:
+    #     row.extend([TextCell(f"{bench['pct']}%", color=bench["color"])])
 
     # add lone druid items row
     if draw_bear_row:
@@ -670,7 +670,6 @@ async def draw_match_table(match):
         TextCell("K", horizontal_align="center"),
         TextCell("D", horizontal_align="center"),
         TextCell("A", horizontal_align="center"),
-        TextCell("BM"),
     ]
     if is_parsed:
         headers.extend([TextCell("APM"), TextCell("Lane"), TextCell("")])
