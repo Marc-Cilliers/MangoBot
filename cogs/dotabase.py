@@ -1,8 +1,6 @@
-from ast import Or
 import json
 import random
 import re
-from textwrap import indent
 
 import disnake
 import feedparser
@@ -10,7 +8,7 @@ import utils.drawing.dota as drawdota
 import utils.drawing.imagetools as imagetools
 import utils.other.rsstools as rsstools
 from disnake.ext import commands, tasks
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import desc, or_
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm.collections import InstrumentedList
 from utils.command.clip import *
@@ -140,7 +138,7 @@ def query_filter_list(query, column, value, separator="|"):
 class Dotabase(MangoCog):
 	"""For information about the game Dota 2 [Patch **{CURRENT_DOTA_PATCH_NUMBER}**]
 
-	Interfaces with [dotabase](http://github.com/mdiller/dotabase). Check out [dotabase.dillerm.io](http://dotabase.dillerm.io) if you want to see an old website I built that interfaces with dotabase."""
+	Interfaces with [dotabase](http://github.com/mdiller/dotabase). Check out [dotabase.dillerm.io](http://dotabase.dillerm.io) if you want to see a website I built that interfaces with dotabase."""
 	def __init__(self, bot):
 		MangoCog.__init__(self, bot)
 		self.session = session
@@ -203,7 +201,7 @@ class Dotabase(MangoCog):
 					tempstring += alias[i]
 					parts.append(tempstring)
 			prefix = alias[:2]
-			if not prefix in pattern_parts:
+			if prefix not in pattern_parts:
 				pattern_parts[prefix] = []
 			pattern_parts[prefix].extend(parts)
 		patterns = []
@@ -419,11 +417,13 @@ class Dotabase(MangoCog):
 		query = session.query(Patch).order_by(Patch.timestamp)
 		start = None
 		end = None
+		found_patch = None
 
 		for patch in query:
 			if start is None:
 				if patch.number == patch_name:
 					start = patch.timestamp
+					found_patch = patch
 			else:
 				if re.sub(r"[a-z]", "", patch.number) != patch_name:
 					end = patch.timestamp
@@ -431,7 +431,7 @@ class Dotabase(MangoCog):
 		if end is None:
 			end = datetime.datetime.now()
 
-		return (patch, start, end)
+		return (found_patch, start, end)
 
 
 	def get_hero_infos(self):
@@ -507,6 +507,8 @@ class Dotabase(MangoCog):
 
 	def get_chatwheel_sound(self, text, loose_fit=False):
 		def simplify(t):
+			if not t:
+				return ""
 			t = re.sub(r"[?!',！？.-]", "", t.lower())
 			return re.sub(r"[_，]", " ", t)
 		text = simplify(text)
@@ -567,7 +569,7 @@ class Dotabase(MangoCog):
 			await self.print_clip(inter, clip)
 	
 	@Audio.clips.sub_command(name="dota")
-	async def clips_dota(self, inter: disnake.CmdInter, text: str = None, hero: Hero = None, criteria: commands.option_enum(CRITERIA_ALIASES) = None, page: commands.Range[1, 10] = 1):
+	async def clips_dota(self, inter: disnake.CmdInter, text: str = None, hero: Hero = None, criteria: commands.option_enum(CRITERIA_ALIASES) = None, page: commands.Range[int, 1, 10] = 1):
 		"""Searches for dota responses
 
 		Parameters
@@ -638,15 +640,15 @@ class Dotabase(MangoCog):
 		hero = self.lookup_hero(hero)
 		if hero is not None:
 			query = query.filter(Response.hero_id == hero.id)
-		query = query.filter(Response.criteria.like(f"%|HeroChatWheel%"))
-		query = query.filter(Response.criteria.like(f"%IsEmoteLaugh%"))
+		query = query.filter(Response.criteria.like("%|HeroChatWheel%"))
+		query = query.filter(Response.criteria.like("%IsEmoteLaugh%"))
 		query = query.order_by(func.random())
 
 		response = query.first()
 		if response is None:
 			query = session.query(Response)
 			query = query.filter(Response.hero_id == hero.id)
-			query = query.filter(Response.criteria.like(f"%IsEmoteLaugh%"))
+			query = query.filter(Response.criteria.like("%IsEmoteLaugh%"))
 			response = query.first()
 		return response
 
@@ -665,7 +667,7 @@ class Dotabase(MangoCog):
 		await self.play_clip(f"dotachatwheel:{message.id}", inter, print=True)
 	
 	@Audio.clips.sub_command(name="chatwheel")
-	async def clips_chatwheel(self, inter: disnake.CmdInter, text: str, page: commands.Range[1, 50] = 1):
+	async def clips_chatwheel(self, inter: disnake.CmdInter, text: str, page: commands.Range[int, 1, 50] = 1):
 		"""Shows a list of chatwheel lines
 		
 		Parameters
@@ -696,13 +698,13 @@ class Dotabase(MangoCog):
 		----------
 		hero: The name or id of the hero
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 		description = ""
 		def add_attr(name, base_func, gain_func):
 			global description
 			result = f"{base_func(hero)} + {gain_func(hero)}"
-			if hero.attr_primary == name:
+			if hero.attr_primary == name or hero.attr_primary == "universal":
 				result = f"**{result}**"
 			icon = self.get_emoji(f"attr_{name}")
 			return f"{icon} {result}\n"
@@ -723,8 +725,10 @@ class Dotabase(MangoCog):
 			"strength": hero.attr_strength_base,
 			"agility": hero.attr_agility_base,
 			"intelligence": hero.attr_intelligence_base,
-			"universal": (hero.attr_strength_base + hero.attr_agility_base + hero.attr_intelligence_base) * 0.6
+			"universal": round((hero.attr_strength_base + hero.attr_agility_base + hero.attr_intelligence_base) * 0.7)
 		}[hero.attr_primary]
+
+		primary_attr_icon = self.get_emoji(f"attr_{hero.attr_primary}")
 
 		attack_stats = (
 			f"{self.get_emoji('hero_damage')} {base_damage + hero.attack_damage_min} - {base_damage + hero.attack_damage_max}\n"
@@ -732,7 +736,7 @@ class Dotabase(MangoCog):
 			f"{self.get_emoji('hero_attack_range')} {hero.attack_range}\n")
 		if not hero.is_melee:
 			attack_stats += f"{self.get_emoji('hero_projectile_speed')} {hero.attack_projectile_speed:,}\n"
-		embed.add_field(name="Attack", value=attack_stats)
+		embed.add_field(name=f"Attack {primary_attr_icon}", value=attack_stats)
 
 		base_armor = hero.base_armor + round(hero.attr_agility_base / 6.0, 1)
 		embed.add_field(name="Defence", value=(
@@ -747,7 +751,7 @@ class Dotabase(MangoCog):
 		stats_value = add_attr("strength", lambda h: h.attr_strength_base, lambda h: h.attr_strength_gain)
 		stats_value += add_attr("agility", lambda h: h.attr_agility_base, lambda h: h.attr_agility_gain)
 		stats_value += add_attr("intelligence", lambda h: h.attr_intelligence_base, lambda h: h.attr_intelligence_gain)
-		embed.add_field(name="Stats", value=stats_value)
+		embed.add_field(name="Attributes", value=stats_value)
 
 		if hero.real_name != '':
 			embed.add_field(name="Real Name", value=hero.real_name)
@@ -772,7 +776,7 @@ class Dotabase(MangoCog):
 		----------
 		hero: The name of the hero
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		
 		# talents = list(map(lambda t: LocaleWrapper.wrap(inter, t.ability).localized_name, hero.talents))
 		image = await drawdota.draw_hero_talents(hero)
@@ -789,7 +793,7 @@ class Dotabase(MangoCog):
 		----------
 		ability: The name of the ability, or a hero name and the ability slot
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 		def format_values(values):
 			if values is None:
@@ -815,7 +819,7 @@ class Dotabase(MangoCog):
 				if key in behavior:
 					extra_stuff = ""
 					if "aoe" in behavior:
-						extra_stuff = f" (AOE)"
+						extra_stuff = " (AOE)"
 					description += f"**Ability:** {ability_behavior[key]}{extra_stuff}\n"
 					break
 
@@ -959,6 +963,9 @@ class Dotabase(MangoCog):
 
 		if ability.mana_cost and ability.mana_cost != "0":
 			embed.add_field(name="\u200b", value=f"{self.get_emoji('mana_cost')} {format_values(ability.mana_cost)}\n")
+		
+		if ability.health_cost and ability.health_cost != "0":
+			embed.add_field(name="\u200b", value=f"{self.get_emoji('health_cost')} {format_values(ability.health_cost)}\n")
 
 		if ability.lore and ability.lore != "":
 			embed.set_footer(text=ability.lore)
@@ -973,7 +980,7 @@ class Dotabase(MangoCog):
 		----------
 		item: The name of the dota 2 item to get
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 		description = ""
 
@@ -1021,6 +1028,8 @@ class Dotabase(MangoCog):
 			description += f"{self.get_emoji('gold')} {item.cost:,}\n"
 		if item.mana_cost and item.mana_cost != "0":
 			description += f"{self.get_emoji('mana_cost')} {clean_values(item.mana_cost)}  "
+		if item.health_cost and item.health_cost != "0":
+			description += f"{self.get_emoji('health_cost')} {clean_values(item.health_cost)}  "
 		if item.cooldown and item.cooldown != "0":
 			description += f"{self.get_emoji('cooldown')} {clean_values(item.cooldown)}"
 
@@ -1044,7 +1053,7 @@ class Dotabase(MangoCog):
 	# @commands.slash_command()
 	async def emoticon(self, inter: disnake.CmdInter):
 		"""Commands for dota 2 emotes"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 	# @emoticon.sub_command(name="show")
 	async def emoticon_show(self, inter: disnake.CmdInter, name):
@@ -1102,7 +1111,7 @@ class Dotabase(MangoCog):
 		----------
 		name: The name of a hero, ability, or item. Leave blank to get random lore!
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		lore_info = {}
 		found = False
 
@@ -1179,7 +1188,7 @@ class Dotabase(MangoCog):
 		name: The name of the hero or ability to get aghanim info for
 		type: The type of aghanim information you're looking for
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		only_do_scepter = type == "Scepter"
 		only_do_shard = type == "Shard"
 
@@ -1312,7 +1321,7 @@ class Dotabase(MangoCog):
 		hero1: The first of the two heroes to fuse
 		hero2: The second of the two heroes to fuse
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 		if hero1.id == hero2.id:
 			raise UserError("Fusing something with itself sounds boring")
@@ -1396,15 +1405,15 @@ class Dotabase(MangoCog):
 		await inter.send(file=image)
 
 
-	@commands.command()
-	async def neutralitems(self, inter: disnake.CmdInter, tier: commands.Range[0, 5] = 0):
+	@commands.slash_command()
+	async def neutralitems(self, inter: disnake.CmdInter, tier: commands.Range[int, 0, 5] = 0):
 		"""Displays neutral item information
 		
 		Parameters
 		----------
 		tier: The neutral item tier to show
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		if tier == 0:
 			tier = None
 
@@ -1427,8 +1436,8 @@ class Dotabase(MangoCog):
 			embed.set_footer(text="Also try: /neutralitems tier 4")
 		await inter.send(embed=embed, file=image)
 
-	@commands.command()
-	async def herostats(self, inter: disnake.CmdInter, hero: Hero, level: commands.Range[1, 30] = 1):
+	@commands.slash_command()
+	async def herostats(self, inter: disnake.CmdInter, hero: Hero, level: commands.Range[int, 1, 30] = 1):
 		"""Gets the stats for a hero at the specified level
 
 		Parameters
@@ -1436,7 +1445,7 @@ class Dotabase(MangoCog):
 		hero: The hero to use. Leave this blank to random a hero
 		level: What level view the stats of this hero at
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		stat_category = next((c for c in self.hero_stat_categories if c["section"] == "Combat Stats"), None)["stats"]
 
 		description = ""
@@ -1466,8 +1475,8 @@ class Dotabase(MangoCog):
 
 		await inter.send(embed=embed)
 
-	@commands.command()
-	async def herotable(self, inter: disnake.CmdInter, stat: HERO_STAT_ENUM, level: commands.Range[1, 30] = 1, hero_count: commands.Range[2, 40] = 20, reverse: bool = False):
+	@commands.slash_command()
+	async def herotable(self, inter: disnake.CmdInter, stat: HERO_STAT_ENUM, level: commands.Range[int, 1, 30] = 1, hero_count: commands.Range[int, 2, 40] = 20, reverse: bool = False):
 		"""Displays a table of dota heroes sorted by a stat
 
 		Parameters
@@ -1477,7 +1486,7 @@ class Dotabase(MangoCog):
 		hero_count: The number of hero rows to show
 		reverse: Whether or not the sorting should be reversed
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		embed = disnake.Embed()
 
 		image = disnake.File(await drawdota.draw_herostatstable(stat, level, hero_count, reverse, self.hero_stat_categories, self.leveled_hero_stats), "herotable.png")
@@ -1494,7 +1503,7 @@ class Dotabase(MangoCog):
 		----------
 		hero: The hero who's abilities to show
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		abilities = []
 		for ability in list(filter(lambda a: a.slot is not None, hero.abilities)):
 			if not hero.id == 74: # invoker

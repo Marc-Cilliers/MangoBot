@@ -3,6 +3,7 @@ import math
 import os
 import queue
 import re
+import shutil
 from typing import List
 import urllib.request
 from ctypes.util import find_library
@@ -294,7 +295,7 @@ class Audio(MangoCog):
 	@commands.slash_command()
 	async def play(self, inter: disnake.CmdInter):
 		"""Root command for clip-controlling commands"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 
 	@play.sub_command(name="local")
 	async def play_local(self, inter: disnake.CmdInter, clipname: str):
@@ -322,7 +323,7 @@ class Audio(MangoCog):
 	@commands.slash_command()
 	async def clips(self, inter: disnake.CmdInter):
 		"""Root command for listing different kinds of clips"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 	
 
 	async def clips_pager(self, inter: disnake.CmdInter, title: str, clipids: List[str], cliptext: List[str] = None, page: int = 1, more_pages: bool = False):
@@ -357,7 +358,7 @@ class Audio(MangoCog):
 		return embed
 
 	@clips.sub_command(name="local")
-	async def clips_local(self, inter: disnake.CmdInter, tag: str, page: commands.Range[1, 99] = 1):
+	async def clips_local(self, inter: disnake.CmdInter, tag: str, page: commands.Range[int, 1, 99] = 1):
 		"""Lists the names of local audio clips. For more info on clips, see '/docs Clips'
 
 		Parameters
@@ -411,7 +412,7 @@ class Audio(MangoCog):
 	@commands.command()
 	async def stop(self, inter: disnake.CmdInter):
 		"""Stops the currently playing clip"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		audioplayer = await self.audioplayer(inter)
 		while not audioplayer.clipqueue.empty():
 			try:
@@ -425,7 +426,7 @@ class Audio(MangoCog):
 	@commands.command()
 	async def replay(self, inter: disnake.CmdInter):
 		"""Replays the last played clip"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		last_clip = (await self.audioplayer(inter)).last_clip
 		if last_clip == None:
 			await inter.send("Nobody said anythin' yet")
@@ -442,7 +443,7 @@ class Audio(MangoCog):
 		----------
 		clipid: A clipid (see '/docs Clips' for more info) or leave this blank, which will get the last played clip
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		if clipid is None:
 			if (await self.audioplayer(inter)).last_clip == None:
 				await inter.send("Nobody said anythin' yet")
@@ -501,7 +502,7 @@ class Audio(MangoCog):
 		----------
 		message: A message to say
 		"""
-		await inter.response.defer()
+		await self.safe_defer(inter)
 		clip = await self.do_smarttts(message, inter)
 		await self.print_clip(inter, clip)
 
@@ -613,6 +614,7 @@ class Audio(MangoCog):
 	# fixes discord user names which either are in all caps or have a number serving as a letter
 	async def fix_name(self, name):
 		# If all upper case or numbers n stuff, make all lower case
+		name = str(name)
 		if re.match(r"^[^a-z]*$", name):
 			name = name.lower()
 
@@ -624,7 +626,7 @@ class Audio(MangoCog):
 
 	#function called when this event occurs
 	@commands.Cog.listener()
-	async def on_voice_state_update(self, member, before, after):
+	async def on_voice_state_update(self, member: disnake.Member, before: disnake.VoiceState, after: disnake.VoiceState):
 		channel_id = "not sure yet"
 		try:
 			if member.bot and member.id != self.bot.user.id:
@@ -649,12 +651,12 @@ class Audio(MangoCog):
 							if outroclip.audiolength > botdatatypes.max_intro_outro_length + 0.5:
 								userinfo.set_default(ctx, "outro")
 								outroclip = userinfo.outro
-					except:
-						userinfo.set_default(ctx, "outro")
+					except Exception as e:
+						logger.error(f"exception '{type(e)}' thrown when getting outro for {member.id}")
 						outroclip = userinfo.outro
 
 					outrotts = userinfo.outrotts
-					name = member.name
+					name = member.global_name
 					if guildinfo.usenickname and member.nick:
 						name = member.nick
 
@@ -685,12 +687,12 @@ class Audio(MangoCog):
 							if introclip.audiolength > botdatatypes.max_intro_outro_length + 0.5:
 								userinfo.set_default(ctx, "intro")
 								introclip = userinfo.intro
-					except:
-						userinfo.set_default(ctx, "intro")
+					except Exception as e:
+						logger.error(f"exception '{type(e)}' thrown when getting intro for {member.id}")
 						introclip = userinfo.intro
 
 					introtts = userinfo.introtts
-					name = member.name
+					name = member.global_name
 					if guildinfo.usenickname and member.nick:
 						name = member.nick
 
@@ -708,6 +710,45 @@ class Audio(MangoCog):
 		except UserError as e:
 			logger.error(f"Bad voice channel connection to ({channel_id}) from on_voice_state_update: {e.message}")
 
+		
+	@commands.slash_command()
+	async def customclip(self, inter: disnake.CmdInter, target: commands.option_enum(["intro", "outro"]), clip: disnake.Attachment):
+		"""Sets your intro or outro to a custom mp3 clip
+
+		Parameters
+		----------
+		target: Whether you're setting your outro or your intro
+		clip: A file to set as your clip. Must be an mp3 less than 4 seconds long."""
+		await self.safe_defer(inter)
+		print(f"setting {target} to {clip.filename}")
+
+		clipnum = {
+			"intro": "1",
+			"outro": "2"
+		}[target]
+
+		clip_identifier = f"{inter.author.id}_{clipnum}"
+		filename = CustomClip.get_clip_path(clip_identifier)
+
+		temp_filename = filename.replace(".mp3", "_TEMP.mp3")
+		await clip.save(temp_filename)
+		
+		# verify that it is less than 4 seconds
+		clip_duration = round(float(run_command(["ffprobe", "-i", temp_filename, "-show_entries", "format=duration", "-v", "quiet", "-of", "csv=p=0"])), 2)
+		if clip_duration > 4:
+			os.remove(temp_filename)
+			raise UserError("Custom clips for intros and outros must be less than 4 seconds long")
+		
+		# move the temp file to the right destination
+		if os.path.exists(filename):
+			os.remove(filename)
+		shutil.copy(temp_filename, filename)
+		os.remove(temp_filename)
+
+		clipid = f"custom:{clip_identifier}"
+
+		botdata.userinfo(inter.author)[target] = clipid
+		await inter.send(f"✅ {target} has been set!")
 
 def setup(bot):
 	bot.add_cog(Audio(bot))

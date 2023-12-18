@@ -19,13 +19,17 @@ description = """A discord bot built primarily around playing audio clips and do
 intents = disnake.Intents.default()
 intents.message_content=True
 
+sync_flags = commands.CommandSyncFlags.default()
+sync_flags.sync_commands_debug = False
+
 bot = commands.AutoShardedBot(
 	command_prefix="9q3%$", 
 	description=description, 
 	case_insensitive=True,
 	shard_count=settings.shard_count,
-	sync_commands_debug=False,
+	command_sync_flags=sync_flags,
 	test_guilds=settings.test_guilds,
+	guild_ready_timeout=10.0,
 	reload=False,
 	intents=intents)
 bot.remove_command("help")

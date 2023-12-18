@@ -6,7 +6,7 @@ Mangobyte has a feature to allow users to be very specific when requesting infor
 
 ### Filter options:
 
-*Note: Many of these options allow for slight variations on the text. If you want more info and can read regular expressions, see the MatchFilter class in [this file](https://github.com/mdiller/MangoByte/blob/master/cogs/utils/commandargs.py)*
+*Note: Many of these options allow for slight variations on the text. If you want more info and can read regular expressions, see the MatchFilter class in [this file](https://github.com/mdiller/MangoByte/blob/master/utils/command/commandargs.py)*
 
 - won/lost
 - ranked/unranked
@@ -36,6 +36,7 @@ You can also specify to get matches for someone other than yourself by just @men
 `/inventory`
 `/lm`
 `/matchids`
+`/percent`
 `/playerstats`
 `/recent`
 `/twenty`
@@ -124,8 +125,8 @@ A dota chatwheel sound clip. You can get a list of these by doing `/clips chatwh
 ### Type: Pokemon [poke]:
 A pokemon cry. Try playing these with the `/pokecry` command
 
-### Type: (WIP) Custom [custom]:
-This clip type doesnt exist yet. In the past I've allowed a clip type called "url", and that has been removed in the latest rework. I'm planning on adding a new type of clip called "custom" that will be more powerful than url clips, and be easier to use. This hasn't been implemented yet, but I'll let you know (through the #updates channel on the [Mangobyte Help Server](https://discord.gg/d6WWHxx)) once I get around to implementing it.
+### Type: Custom [custom]:
+You can specify a custom clip for your intro or outro via the `/customclip` command. Note that the mp3 file you upload must be less than 4 seconds long.
 
 
 # Command and User Permissions

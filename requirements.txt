@@ -1,4 +1,4 @@
-disnake[voice]>=2.8.1
+disnake[voice]>=2.9.0
 beautifulsoup4>=4.6.3
 colorgram.py==1.1.0
 gTTS>=2.2.1
@@ -6,13 +6,13 @@ gTTS-token>=1.1.4
 SQLAlchemy==1.4.40
 Pillow>=9.0.1
 youtube-dl>=2018.8.28
-dotabase>=7.4.0
+dotabase>=7.6.0
 praw==6.0.0
 numpy>=1.22.0
 databases==0.2.2
 aiosqlite==0.10.0
 feedparser >= 6.0.2
 python-dateutil>=2.8.1
-SQLAlchemy-Utils>=0.41.1
 orjson>=3.7.2
-tinydb==4.7.1
+tinydb>=4.8.0
+SQLAlchemy-Utils>=0.41.1

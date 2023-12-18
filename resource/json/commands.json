@@ -1,542 +1,569 @@
 {
-  "cogs": [
-    {
-      "name": "General",
-      "short_help": "Commands that don't really fit into the other categories",
-      "help": "Commands that don't really fit into the other categories\n\nRandom and/or fun commands with a variety of uses"
-    },
-    {
-      "name": "Audio",
-      "short_help": "For playing audio in a voice channel",
-      "help": "For playing audio in a voice channel\n\nThe mangobyte audio system uses things called 'clips'. For more info on these, check out `/docs Clips`"
-    },
-    {
-      "name": "Dotabase",
-      "short_help": "For information about the game Dota 2 [Patch **7.31c**]",
-      "help": "For information about the game Dota 2 [Patch **7.31c**]\n\nInterfaces with [dotabase](http://github.com/mdiller/dotabase). Check out [dotabase.dillerm.io](http://dotabase.dillerm.io) if you want to see an old website I built that interfaces with dotabase."
-    },
-    {
-      "name": "DotaStats",
-      "short_help": "Commands for displaying information about Dota 2 players and matches",
-      "help": "Commands for displaying information about Dota 2 players and matches\n\nMost of the data for this is collected through the [OpenDota API](https://docs.opendota.com/)"
-    },
-    {
-      "name": "Pokemon",
-      "short_help": "Pokemon related commands",
-      "help": "Pokemon related commands\n\nA few commands using the [pokeapi](https://pokeapi.co/) which provides information about pokemon\n\nNote that the above API does not include information about pokemon Sun and Moon, so I can't look up those pokemon for you"
-    },
-    {
-      "name": "Admin",
-      "short_help": "Commands to help manage mangobyte on your server/guild",
-      "help": "Commands to help manage mangobyte on your server/guild\n\nPrimarily used to configure mangobyte for this particular server/guild, and also for moving in and out of voice channels.\n\nOnly admins or people with the correct role can use these commands. To set a role as the 'Bot Admin' role, try `/config botadmin`. Note that the `/summon` and `/unsummon` commands can be configured to be usable by everyone via `/config restrictsummoning disable`."
-    }
-  ],
-  "commands": [
-    {
-      "name": "abilities",
-      "signature": null,
-      "short_help": "Shows all of the abilities/spells for that hero",
-      "help": "Shows all of the abilities/spells for that hero",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "ability",
-      "signature": null,
-      "short_help": "Gets information about a specific hero ability",
-      "help": "Gets information about a specific hero ability",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "aghanim",
-      "signature": null,
-      "short_help": "Gets the aghs upgrade for the given hero or ability",
-      "help": "Gets the aghs upgrade for the given hero or ability",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "bot changelog",
-      "signature": null,
-      "short_help": "Gets a rough changelog for mangobyte",
-      "help": "Gets a rough changelog for mangobyte",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "bot donate",
-      "signature": null,
-      "short_help": "Posts some links with info about how to donate to the developer",
-      "help": "Posts some links with info about how to donate to the developer",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "bot info",
-      "signature": null,
-      "short_help": "Prints info about mangobyte",
-      "help": "Prints info about mangobyte",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "bot invite",
-      "signature": null,
-      "short_help": "Shows the invite link",
-      "help": "Shows the invite link",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "bot stats",
-      "signature": null,
-      "short_help": "Displays some bot statistics",
-      "help": "Displays some bot statistics",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "botunban",
-      "signature": null,
-      "short_help": "Unbans the user, allowing them to use commands. Note this will soon be deprecated.",
-      "help": "Unbans the user, allowing them to use commands. Note this will soon be deprecated.",
-      "aliases": [],
-      "cog": "Admin",
-      "prefix": "/"
-    },
-    {
-      "name": "clipinfo",
-      "signature": null,
-      "short_help": "Gets information and a file for the given clip",
-      "help": "Gets information and a file for the given clip",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "clips chatwheel",
-      "signature": null,
-      "short_help": "Shows a list of chatwheel lines",
-      "help": "Shows a list of chatwheel lines",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "clips dota",
-      "signature": null,
-      "short_help": "Plays a dota response",
-      "help": "Plays a dota response",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "clips local",
-      "signature": null,
-      "short_help": "Lists the names of local audio clips. For more info on clips, see '/docs Clips'",
-      "help": "Lists the names of local audio clips. For more info on clips, see '/docs Clips'",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "config",
-      "signature": null,
-      "short_help": "Configures the bot's settings for this server/guild",
-      "help": "Configures the bot's settings for this server/guild",
-      "aliases": [],
-      "cog": "Admin",
-      "prefix": "/"
-    },
-    {
-      "name": "courage",
-      "signature": null,
-      "short_help": "Generates a challenge build with a random hero and items",
-      "help": "Generates a challenge build with a random hero and items",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "docs",
-      "signature": null,
-      "short_help": "Shows some documentation about a specific part of the bot",
-      "help": "Shows some documentation about a specific part of the bot",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "dotagif",
-      "signature": null,
-      "short_help": "Creates a gif of a specific part of a dota match",
-      "help": "Creates a gif of a specific part of a dota match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "echo",
-      "signature": null,
-      "short_help": "Echos the given message",
-      "help": "Echos the given message",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "emoticon add",
-      "signature": null,
-      "short_help": "Adds a dota emoticon as an animated emoji to this server",
-      "help": "Adds a dota emoticon as an animated emoji to this server",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "emoticon show",
-      "signature": null,
-      "short_help": "Gets the gif of a dota emoticon",
-      "help": "Gets the gif of a dota emoticon",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "enablecommand",
-      "signature": null,
-      "short_help": "Re-enables the specified command or command category. Note this will soon be deprecated.",
-      "help": "Re-enables the specified command or command category. Note this will soon be deprecated.",
-      "aliases": [],
-      "cog": "Admin",
-      "prefix": "/"
-    },
-    {
-      "name": "firstmatch",
-      "signature": null,
-      "short_help": "Gets info about the player's first dota game",
-      "help": "Gets info about the player's first dota game",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "fuseheroes",
-      "signature": null,
-      "short_help": "Visually fuse together two heroes",
-      "help": "Visually fuse together two heroes",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "help",
-      "signature": null,
-      "short_help": "Gives some information about the bot command categories",
-      "help": "Gives some information about the bot command categories",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "hero",
-      "signature": null,
-      "short_help": "Gets information about a specific hero",
-      "help": "Gets information about a specific hero",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "herostats",
-      "signature": null,
-      "short_help": "Gets the stats for a hero at the specified level",
-      "help": "Gets the stats for a hero at the specified level",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "herotable",
-      "signature": null,
-      "short_help": "Displays a table of dota heroes sorted by a stat",
-      "help": "Displays a table of dota heroes sorted by a stat",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "item",
-      "signature": null,
-      "short_help": "Gets information about a specific dota 2 item",
-      "help": "Gets information about a specific dota 2 item",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "lm",
-      "signature": null,
-      "short_help": "Gets info about the player's last dota game",
-      "help": "Gets info about the player's last dota game",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "lore",
-      "signature": null,
-      "short_help": "Gets the lore of a hero, ability, or item",
-      "help": "Gets the lore of a hero, ability, or item",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "match graph",
-      "signature": null,
-      "short_help": "Creates a graph for a dota match",
-      "help": "Creates a graph for a dota match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "match info",
-      "signature": null,
-      "short_help": "Creates a table with some basic stats and information about the dota match",
-      "help": "Creates a table with some basic stats and information about the dota match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "match laning",
-      "signature": null,
-      "short_help": "Creates gif of the laning stage with a caption",
-      "help": "Creates gif of the laning stage with a caption",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "match skillbuild",
-      "signature": null,
-      "short_help": "Gets the ability upgrades for a match",
-      "help": "Gets the ability upgrades for a match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "match story",
-      "signature": null,
-      "short_help": "Tells the story of the match",
-      "help": "Tells the story of the match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "matchids",
-      "signature": null,
-      "short_help": "Gets a list of recent matchids that match the given filter",
-      "help": "Gets a list of recent matchids that match the given filter",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "meta",
-      "signature": null,
-      "short_help": "Prints the top meta heroes from https://opendota.com/heroes",
-      "help": "Prints the top meta heroes from https://opendota.com/heroes",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "misc ask",
-      "signature": null,
-      "short_help": "A magic 8-ball style question answerer",
-      "help": "A magic 8-ball style question answerer",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc cat",
-      "signature": null,
-      "short_help": "Gets a picture of the developer's cat",
-      "help": "Gets a picture of the developer's cat",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc choose",
-      "signature": null,
-      "short_help": "Randomly chooses one of the given options",
-      "help": "Randomly chooses one of the given options",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc dog",
-      "signature": null,
-      "short_help": "Gets a picture of one of the developer's dogs",
-      "help": "Gets a picture of one of the developer's dogs",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc insult",
-      "signature": null,
-      "short_help": "Insults the given victim, or you if you dont target anyone",
-      "help": "Insults the given victim, or you if you dont target anyone",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc lasagna",
-      "signature": null,
-      "short_help": "Posts an image of a baked italian dish",
-      "help": "Posts an image of a baked italian dish",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc random",
-      "signature": null,
-      "short_help": "Gets a random number between the minimum and maximum (inclusive)",
-      "help": "Gets a random number between the minimum and maximum (inclusive)",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc scramble",
-      "signature": null,
-      "short_help": "Scrambles the insides of words",
-      "help": "Scrambles the insides of words",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "misc showerthought",
-      "signature": null,
-      "short_help": "Gets a top post from the r/ShowerThoughts subreddit",
-      "help": "Gets a top post from the r/ShowerThoughts subreddit",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "neutralitems",
-      "signature": null,
-      "short_help": "Displays neutral item information",
-      "help": "Displays neutral item information",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "parse",
-      "signature": null,
-      "short_help": "Request for OpenDota to parse a recent match",
-      "help": "Request for OpenDota to parse a recent match",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "ping",
-      "signature": null,
-      "short_help": "Pongs a number of times(within reason)",
-      "help": "Pongs a number of times(within reason)",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "play chatwheel",
-      "signature": null,
-      "short_help": "Plays the given chat wheel sound. Try '/clips chatwheel' to get a list of clips.",
-      "help": "Plays the given chat wheel sound. Try '/clips chatwheel' to get a list of clips.",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "play dota",
-      "signature": null,
-      "short_help": "Plays a dota response. Try '/clips dota' for a similar command that returns a list",
-      "help": "Plays a dota response. Try '/clips dota' for a similar command that returns a list",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "play local",
-      "signature": null,
-      "short_help": "Plays a local audio clip. For more information on clips, see `/docs Clips`",
-      "help": "Plays a local audio clip. For more information on clips, see `/docs Clips`",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "play tts",
-      "signature": null,
-      "short_help": "Converts the given message to speech and plays the tts clip",
-      "help": "Converts the given message to speech and plays the tts clip",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "playerstats",
-      "signature": null,
-      "short_help": "Gets stats about the player's dota matches",
-      "help": "Gets stats about the player's dota matches",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "pokecry",
-      "signature": null,
-      "short_help": "Plays the pokemon's sound effect",
-      "help": "Plays the pokemon's sound effect",
-      "aliases": [],
-      "cog": "Pokemon",
-      "prefix": "/"
-    },
-    {
-      "name": "pokemon",
-      "signature": null,
-      "short_help": "Looks up information about the given pokemon",
-      "help": "Looks up information about the given pokemon",
-      "aliases": [],
-      "cog": "Pokemon",
-      "prefix": "/"
-    },
-    {
+	"cogs": [
+		{
+			"name": "General",
+			"short_help": "Commands that don't really fit into the other categories",
+			"help": "Commands that don't really fit into the other categories\n\nRandom and/or fun commands with a variety of uses"
+		},
+		{
+			"name": "Audio",
+			"short_help": "For playing audio in a voice channel",
+			"help": "For playing audio in a voice channel\n\nThe mangobyte audio system uses things called 'clips'. For more info on these, check out `/docs Clips`"
+		},
+		{
+			"name": "Dotabase",
+			"short_help": "For information about the game Dota 2 [Patch **7.34d**]",
+			"help": "For information about the game Dota 2 [Patch **7.34d**]\n\nInterfaces with [dotabase](http://github.com/mdiller/dotabase). Check out [dotabase.dillerm.io](http://dotabase.dillerm.io) if you want to see a website I built that interfaces with dotabase."
+		},
+		{
+			"name": "DotaStats",
+			"short_help": "Commands for displaying information about Dota 2 players and matches",
+			"help": "Commands for displaying information about Dota 2 players and matches\n\nMost of the data for this is collected through the [OpenDota API](https://docs.opendota.com/)"
+		},
+		{
+			"name": "Pokemon",
+			"short_help": "Pokemon related commands",
+			"help": "Pokemon related commands\n\nA few commands using the [pokeapi](https://pokeapi.co/) which provides information about pokemon\n\nNote that the above API does not include information about pokemon Sun and Moon, so I can't look up those pokemon for you"
+		},
+		{
+			"name": "Admin",
+			"short_help": "Commands to help manage mangobyte on your server/guild",
+			"help": "Commands to help manage mangobyte on your server/guild\n\nPrimarily used to configure mangobyte for this particular server/guild, and also for moving in and out of voice channels.\n\nOnly admins or people with the correct role can use these commands. To set a role as the 'Bot Admin' role, try `/config botadmin`. Note that the `/summon` and `/unsummon` commands can be configured to be usable by everyone via `/config restrictsummoning disable`."
+		}
+	],
+	"commands": [
+		{
+			"name": "abilities",
+			"signature": null,
+			"short_help": "Shows all of the abilities/spells for that hero",
+			"help": "Shows all of the abilities/spells for that hero",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "ability",
+			"signature": null,
+			"short_help": "Gets information about a specific hero ability",
+			"help": "Gets information about a specific hero ability",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "aghanim",
+			"signature": null,
+			"short_help": "Gets the aghs upgrade for the given hero or ability",
+			"help": "Gets the aghs upgrade for the given hero or ability",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "bot changelog",
+			"signature": null,
+			"short_help": "Gets a rough changelog for mangobyte",
+			"help": "Gets a rough changelog for mangobyte",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "bot donate",
+			"signature": null,
+			"short_help": "Posts some links with info about how to donate to the developer",
+			"help": "Posts some links with info about how to donate to the developer",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "bot info",
+			"signature": null,
+			"short_help": "Prints info about mangobyte",
+			"help": "Prints info about mangobyte",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "bot invite",
+			"signature": null,
+			"short_help": "Shows the invite link",
+			"help": "Shows the invite link",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "bot stats",
+			"signature": null,
+			"short_help": "Displays some bot statistics",
+			"help": "Displays some bot statistics",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "botunban",
+			"signature": null,
+			"short_help": "Unbans the user, allowing them to use commands. Note this will soon be deprecated.",
+			"help": "Unbans the user, allowing them to use commands. Note this will soon be deprecated.",
+			"aliases": [],
+			"cog": "Admin",
+			"prefix": "/"
+		},
+		{
+			"name": "clipinfo",
+			"signature": null,
+			"short_help": "Gets information and a file for the given clip",
+			"help": "Gets information and a file for the given clip",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "clips chatwheel",
+			"signature": null,
+			"short_help": "Shows a list of chatwheel lines",
+			"help": "Shows a list of chatwheel lines",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "clips dota",
+			"signature": null,
+			"short_help": "Searches for dota responses",
+			"help": "Searches for dota responses",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "clips local",
+			"signature": null,
+			"short_help": "Lists the names of local audio clips. For more info on clips, see '/docs Clips'",
+			"help": "Lists the names of local audio clips. For more info on clips, see '/docs Clips'",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "config",
+			"signature": null,
+			"short_help": "Configures the bot's settings for this server/guild",
+			"help": "Configures the bot's settings for this server/guild",
+			"aliases": [],
+			"cog": "Admin",
+			"prefix": "/"
+		},
+		{
+			"name": "courage",
+			"signature": null,
+			"short_help": "Generates a challenge build with a random hero and items",
+			"help": "Generates a challenge build with a random hero and items",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "customclip",
+			"signature": null,
+			"short_help": "Sets your intro or outro to a custom mp3 clip",
+			"help": "Sets your intro or outro to a custom mp3 clip",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "docs",
+			"signature": null,
+			"short_help": "Shows some documentation about a specific part of the bot",
+			"help": "Shows some documentation about a specific part of the bot",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "dotagif",
+			"signature": null,
+			"short_help": "Creates a gif of a specific part of a dota match",
+			"help": "Creates a gif of a specific part of a dota match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "echo",
+			"signature": null,
+			"short_help": "Echos the given message",
+			"help": "Echos the given message",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "emoticon add",
+			"signature": null,
+			"short_help": "Adds a dota emoticon as an animated emoji to this server",
+			"help": "Adds a dota emoticon as an animated emoji to this server",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "emoticon show",
+			"signature": null,
+			"short_help": "Gets the gif of a dota emoticon",
+			"help": "Gets the gif of a dota emoticon",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "enablecommand",
+			"signature": null,
+			"short_help": "Re-enables the specified command or command category. Note this will soon be deprecated.",
+			"help": "Re-enables the specified command or command category. Note this will soon be deprecated.",
+			"aliases": [],
+			"cog": "Admin",
+			"prefix": "/"
+		},
+		{
+			"name": "firstmatch",
+			"signature": null,
+			"short_help": "Gets info about the player's first dota game",
+			"help": "Gets info about the player's first dota game",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "fuseheroes",
+			"signature": null,
+			"short_help": "Visually fuse together two heroes",
+			"help": "Visually fuse together two heroes",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "help",
+			"signature": null,
+			"short_help": "Gives some information about the bot command categories",
+			"help": "Gives some information about the bot command categories",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "hero",
+			"signature": null,
+			"short_help": "Gets information about a specific hero",
+			"help": "Gets information about a specific hero",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "herostats",
+			"signature": null,
+			"short_help": "Gets the stats for a hero at the specified level",
+			"help": "Gets the stats for a hero at the specified level",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "herotable",
+			"signature": null,
+			"short_help": "Displays a table of dota heroes sorted by a stat",
+			"help": "Displays a table of dota heroes sorted by a stat",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "inventory",
+			"signature": null,
+			"short_help": "Shows the most commonly bought items for each slot in your inventory",
+			"help": "Shows the most commonly bought items for each slot in your inventory",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "item",
+			"signature": null,
+			"short_help": "Gets information about a specific dota 2 item",
+			"help": "Gets information about a specific dota 2 item",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "lm",
+			"signature": null,
+			"short_help": "Gets info about the player's last dota game",
+			"help": "Gets info about the player's last dota game",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "lore",
+			"signature": null,
+			"short_help": "Gets the lore of a hero, ability, or item",
+			"help": "Gets the lore of a hero, ability, or item",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "match graph",
+			"signature": null,
+			"short_help": "Creates a graph for a dota match",
+			"help": "Creates a graph for a dota match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "match info",
+			"signature": null,
+			"short_help": "Creates a table with some basic stats and information about the dota match",
+			"help": "Creates a table with some basic stats and information about the dota match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "match laning",
+			"signature": null,
+			"short_help": "Creates gif of the laning stage with a caption",
+			"help": "Creates gif of the laning stage with a caption",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "match skillbuild",
+			"signature": null,
+			"short_help": "Gets the ability upgrades for a match",
+			"help": "Gets the ability upgrades for a match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "match story",
+			"signature": null,
+			"short_help": "Tells the story of the match",
+			"help": "Tells the story of the match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "matchids",
+			"signature": null,
+			"short_help": "Gets a list of recent matchids that match the given filter",
+			"help": "Gets a list of recent matchids that match the given filter",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "meta",
+			"signature": null,
+			"short_help": "Prints the top meta heroes from https://opendota.com/heroes",
+			"help": "Prints the top meta heroes from https://opendota.com/heroes",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "misc ask",
+			"signature": null,
+			"short_help": "A magic 8-ball style question answerer",
+			"help": "A magic 8-ball style question answerer",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc cat",
+			"signature": null,
+			"short_help": "Gets a picture of the developer's cat",
+			"help": "Gets a picture of the developer's cat",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc choose",
+			"signature": null,
+			"short_help": "Randomly chooses one of the given options",
+			"help": "Randomly chooses one of the given options",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc dog",
+			"signature": null,
+			"short_help": "Gets a picture of one of the developer's dogs",
+			"help": "Gets a picture of one of the developer's dogs",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc insult",
+			"signature": null,
+			"short_help": "Insults the given victim, or you if you dont target anyone",
+			"help": "Insults the given victim, or you if you dont target anyone",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc lasagna",
+			"signature": null,
+			"short_help": "Posts an image of a baked italian dish",
+			"help": "Posts an image of a baked italian dish",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc random",
+			"signature": null,
+			"short_help": "Gets a random number between the minimum and maximum (inclusive)",
+			"help": "Gets a random number between the minimum and maximum (inclusive)",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc scramble",
+			"signature": null,
+			"short_help": "Scrambles the insides of words",
+			"help": "Scrambles the insides of words",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "misc showerthought",
+			"signature": null,
+			"short_help": "Gets a top post from the r/ShowerThoughts subreddit",
+			"help": "Gets a top post from the r/ShowerThoughts subreddit",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "neutralitems",
+			"signature": null,
+			"short_help": "Displays neutral item information",
+			"help": "Displays neutral item information",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "parse",
+			"signature": null,
+			"short_help": "Request for OpenDota to parse a recent match",
+			"help": "Request for OpenDota to parse a recent match",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "percent",
+			"signature": null,
+			"short_help": "Out of the matches that match filter1, the percent of them that also match filter2",
+			"help": "Out of the matches that match filter1, the percent of them that also match filter2",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "ping",
+			"signature": null,
+			"short_help": "Pongs a number of times(within reason)",
+			"help": "Pongs a number of times(within reason)",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "play chatwheel",
+			"signature": null,
+			"short_help": "Plays the given chat wheel sound. Try '/clips chatwheel' to get a list of clips.",
+			"help": "Plays the given chat wheel sound. Try '/clips chatwheel' to get a list of clips.",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "play dota",
+			"signature": null,
+			"short_help": "Plays a dota response. Try '/clips dota' for a similar command that returns a list",
+			"help": "Plays a dota response. Try '/clips dota' for a similar command that returns a list",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "play local",
+			"signature": null,
+			"short_help": "Plays a local audio clip. For more information on clips, see `/docs Clips`",
+			"help": "Plays a local audio clip. For more information on clips, see `/docs Clips`",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "play tts",
+			"signature": null,
+			"short_help": "Converts the given message to speech and plays the tts clip",
+			"help": "Converts the given message to speech and plays the tts clip",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "playerstats",
+			"signature": null,
+			"short_help": "Gets stats about the player's dota matches",
+			"help": "Gets stats about the player's dota matches",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "pokecry",
+			"signature": null,
+			"short_help": "Plays the pokemon's sound effect",
+			"help": "Plays the pokemon's sound effect",
+			"aliases": [],
+			"cog": "Pokemon",
+			"prefix": "/"
+		},
+		{
+			"name": "pokemon",
+			"signature": null,
+			"short_help": "Looks up information about the given pokemon",
+			"help": "Looks up information about the given pokemon",
+			"aliases": [],
+			"cog": "Pokemon",
+			"prefix": "/"
+		},
+		{
       "name": "postgame",
       "signature": null,
       "short_help": "Gets postgame stats",
@@ -545,140 +572,140 @@
       "cog": "DotaStats",
       "prefix": "9q3%$"
     },
-    {
-      "name": "profile",
-      "signature": null,
-      "short_help": "Displays information about the player's dota profile",
-      "help": "Displays information about the player's dota profile",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "recent",
-      "signature": null,
-      "short_help": "Gets a list of your recent dota matches",
-      "help": "Gets a list of your recent dota matches",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "recipe",
-      "signature": null,
-      "short_help": "Shows the recipes involving this item",
-      "help": "Shows the recipes involving this item",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "reddit",
-      "signature": null,
-      "short_help": "Displays a formatted reddit post",
-      "help": "Displays a formatted reddit post",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "replay",
-      "signature": null,
-      "short_help": "Replays the last played clip",
-      "help": "Replays the last played clip",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "rolesgraph",
-      "signature": null,
-      "short_help": "Gets a graph displaying the dota player's hero roles",
-      "help": "Gets a graph displaying the dota player's hero roles",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "say",
-      "signature": null,
-      "short_help": "Plays a sound clip based on the message given, drawing from multiple clip types",
-      "help": "Plays a sound clip based on the message given, drawing from multiple clip types",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "stop",
-      "signature": null,
-      "short_help": "Stops the currently playing clip",
-      "help": "Stops the currently playing clip",
-      "aliases": [],
-      "cog": "Audio",
-      "prefix": "/"
-    },
-    {
-      "name": "summon",
-      "signature": null,
-      "short_help": "Summons the bot to the voice channel",
-      "help": "Summons the bot to the voice channel",
-      "aliases": [],
-      "cog": "Admin",
-      "prefix": "/"
-    },
-    {
-      "name": "talents",
-      "signature": null,
-      "short_help": "Gets the talents of a specific hero",
-      "help": "Gets the talents of a specific hero",
-      "aliases": [],
-      "cog": "Dotabase",
-      "prefix": "/"
-    },
-    {
-      "name": "twenty",
-      "signature": null,
-      "short_help": "Gets stats from the player's last 20 parsed games",
-      "help": "Gets stats from the player's last 20 parsed games",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "unsummon",
-      "signature": null,
-      "short_help": "Removes the bot from the voice channel",
-      "help": "Removes the bot from the voice channel",
-      "aliases": [],
-      "cog": "Admin",
-      "prefix": "/"
-    },
-    {
-      "name": "userconfig",
-      "signature": null,
-      "short_help": "Configures the bot's user-specific settings",
-      "help": "Configures the bot's user-specific settings",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    },
-    {
-      "name": "whoishere",
-      "signature": null,
-      "short_help": "Shows the linked steam accounts of anyone who is in voice chat with mango",
-      "help": "Shows the linked steam accounts of anyone who is in voice chat with mango",
-      "aliases": [],
-      "cog": "DotaStats",
-      "prefix": "/"
-    },
-    {
-      "name": "wiki",
-      "signature": null,
-      "short_help": "Looks up a thing on wikipedia",
-      "help": "Looks up a thing on wikipedia",
-      "aliases": [],
-      "cog": "General",
-      "prefix": "/"
-    }
-  ]
+		{
+			"name": "profile",
+			"signature": null,
+			"short_help": "Displays information about the player's dota profile",
+			"help": "Displays information about the player's dota profile",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "recent",
+			"signature": null,
+			"short_help": "Gets a list of your recent dota matches",
+			"help": "Gets a list of your recent dota matches",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "recipe",
+			"signature": null,
+			"short_help": "Shows the recipes involving this item",
+			"help": "Shows the recipes involving this item",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "reddit",
+			"signature": null,
+			"short_help": "Displays a formatted reddit post",
+			"help": "Displays a formatted reddit post",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "replay",
+			"signature": null,
+			"short_help": "Replays the last played clip",
+			"help": "Replays the last played clip",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "rolesgraph",
+			"signature": null,
+			"short_help": "Gets a graph displaying the dota player's hero roles",
+			"help": "Gets a graph displaying the dota player's hero roles",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "say",
+			"signature": null,
+			"short_help": "Plays a sound clip based on the message given, drawing from multiple clip types",
+			"help": "Plays a sound clip based on the message given, drawing from multiple clip types",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "stop",
+			"signature": null,
+			"short_help": "Stops the currently playing clip",
+			"help": "Stops the currently playing clip",
+			"aliases": [],
+			"cog": "Audio",
+			"prefix": "/"
+		},
+		{
+			"name": "summon",
+			"signature": null,
+			"short_help": "Summons the bot to the voice channel",
+			"help": "Summons the bot to the voice channel",
+			"aliases": [],
+			"cog": "Admin",
+			"prefix": "/"
+		},
+		{
+			"name": "talents",
+			"signature": null,
+			"short_help": "Gets the talents of a specific hero",
+			"help": "Gets the talents of a specific hero",
+			"aliases": [],
+			"cog": "Dotabase",
+			"prefix": "/"
+		},
+		{
+			"name": "twenty",
+			"signature": null,
+			"short_help": "Gets stats from the player's last 20 parsed games",
+			"help": "Gets stats from the player's last 20 parsed games",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "unsummon",
+			"signature": null,
+			"short_help": "Removes the bot from the voice channel",
+			"help": "Removes the bot from the voice channel",
+			"aliases": [],
+			"cog": "Admin",
+			"prefix": "/"
+		},
+		{
+			"name": "userconfig",
+			"signature": null,
+			"short_help": "Configures the bot's user-specific settings",
+			"help": "Configures the bot's user-specific settings",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		},
+		{
+			"name": "whoishere",
+			"signature": null,
+			"short_help": "Shows the linked steam accounts of anyone who is in voice chat with mango",
+			"help": "Shows the linked steam accounts of anyone who is in voice chat with mango",
+			"aliases": [],
+			"cog": "DotaStats",
+			"prefix": "/"
+		},
+		{
+			"name": "wiki",
+			"signature": null,
+			"short_help": "Looks up a thing on wikipedia",
+			"help": "Looks up a thing on wikipedia",
+			"aliases": [],
+			"cog": "General",
+			"prefix": "/"
+		}
+	]
 }
