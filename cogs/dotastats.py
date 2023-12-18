@@ -729,8 +729,10 @@ class DotaStats(MangoCog):
         logger.event("postgame command start!", {"match_id": match_id})
 
         match = await get_match(match_id)
+        logger.event("players fetched!", {"players": match["players"]})
+
         steam_id = self.config["streamer_steam_id"]
-        streamer = next(p for p in match["players"] if p["account_id"] == steam_id)
+        streamer = next(p for p in match["players"] if p.get("account_id", None) == steam_id)
         streamer_win = streamer["win"] != 0
         title = "Fallen WON!" if streamer_win else "Fallen LOST!"
         embed_color = self.win_color if streamer_win else self.lose_color
