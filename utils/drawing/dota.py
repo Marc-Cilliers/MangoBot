@@ -9,12 +9,26 @@ import typing
 from PIL import Image, ImageDraw, ImageFont
 from utils.tools.globals import httpgetter, logger, settings
 from utils.tools.helpers import (
-    UserError, format_duration_simple, get_pretty_time, read_json, run_command)
+    UserError,
+    format_duration_simple,
+    get_pretty_time,
+    read_json,
+    run_command,
+)
 
 from .imagetools import *
 from utils.other.metastats import get_hero_pickban_percent, get_hero_winrate
-from utils.drawing.table import (ColorCell, DoubleCell, ImageCell, SlantedTextCell,
-                                 Table, TextCell, EmptyCell, CustomRenderCell, get_table_font)
+from utils.drawing.table import (
+    ColorCell,
+    DoubleCell,
+    ImageCell,
+    SlantedTextCell,
+    Table,
+    TextCell,
+    EmptyCell,
+    CustomRenderCell,
+    get_table_font,
+)
 
 radiant_icon = settings.resource("images/radiant.png")
 dire_icon = settings.resource("images/dire.png")
@@ -35,7 +49,7 @@ item_quality_colors = {
     "consumable": "#1D80E7",
     "common": "#2BAB01",
     "epic": "#B812F9",
-    "component": "#FEFEFE"
+    "component": "#FEFEFE",
 }
 
 # from vpk/panorama/styles/dotastyles.css
@@ -70,9 +84,11 @@ hero_infos = {}
 item_infos = {}
 ability_infos = {}
 
+
 def get_text_size(font, text):
     bbox = font.getbbox(text)
-    return [ bbox[2] - bbox[0], bbox[3] - bbox[1] ]
+    return [bbox[2] - bbox[0], bbox[3] - bbox[1]]
+
 
 def get_item_color(item, default=None):
     if item is None:
@@ -105,28 +121,28 @@ async def get_hero_image(hero_id):
     try:
         return await get_url_image(hero_infos[hero_id]["image"])
     except KeyError:
-        return Image.new('RGBA', (10, 10), (0, 0, 0, 0))
+        return Image.new("RGBA", (10, 10), (0, 0, 0, 0))
 
 
 async def get_hero_icon(hero_id):
     try:
         return await get_url_image(hero_infos[hero_id]["icon"])
     except KeyError:
-        return Image.new('RGBA', (10, 10), (0, 0, 0, 0))
+        return Image.new("RGBA", (10, 10), (0, 0, 0, 0))
 
 
 async def get_hero_portrait(hero_id):
     try:
         return await get_url_image(hero_infos[hero_id]["portrait"])
     except KeyError:
-        return Image.new('RGBA', (10, 10), (0, 0, 0, 0))
+        return Image.new("RGBA", (10, 10), (0, 0, 0, 0))
 
 
 async def get_item_image(item_id):
     try:
         return await get_url_image(item_infos[item_id]["icon"])
     except KeyError:
-        return Image.new('RGBA', (10, 10), (0, 0, 0, 0))
+        return Image.new("RGBA", (10, 10), (0, 0, 0, 0))
 
 
 async def get_rank_image(rank_tier, leaderboard_rank):
@@ -155,12 +171,14 @@ async def get_rank_image(rank_tier, leaderboard_rank):
         elif leaderboard_rank <= 100:
             modifier = "b"
 
-    image = Image.open(settings.resource(
-        f"images/ranks/rank_{badge_num}{modifier}.png"))
+    image = Image.open(
+        settings.resource(f"images/ranks/rank_{badge_num}{modifier}.png")
+    )
 
     if stars_num > 0:
-        stars_image = Image.open(settings.resource(
-            f"images/ranks/stars_{stars_num}.png"))
+        stars_image = Image.open(
+            settings.resource(f"images/ranks/stars_{stars_num}.png")
+        )
         image = paste_image(image, stars_image, 0, 0)
 
     if leaderboard_rank:
@@ -169,8 +187,9 @@ async def get_rank_image(rank_tier, leaderboard_rank):
         box_width = 64
         box_height = 64
 
-        cell = TextCell(leaderboard_rank, color="#feffe5",
-                        font_size=50, horizontal_align="center")
+        cell = TextCell(
+            leaderboard_rank, color="#feffe5", font_size=50, horizontal_align="center"
+        )
         cell.render(draw, image, 0, 232 - box_height, box_width, box_height)
 
     image.resize((64, 64))
@@ -180,16 +199,24 @@ async def get_rank_image(rank_tier, leaderboard_rank):
 async def get_level_image(level):
     rowheight = 48
 
-    image = Image.new('RGBA', (rowheight - 4, rowheight), (0, 0, 0, 0))
+    image = Image.new("RGBA", (rowheight - 4, rowheight), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
 
     size = image.size
     outer_radius = 20
     inner_radius = outer_radius - 2
-    outer_circle = ((size[0] / 2) - outer_radius, (size[1] / 2) - outer_radius,
-                    (size[0] / 2) + outer_radius, (size[1] / 2) + outer_radius)
-    inner_circle = ((size[0] / 2) - inner_radius, (size[1] / 2) - inner_radius,
-                    (size[0] / 2) + inner_radius, (size[1] / 2) + inner_radius)
+    outer_circle = (
+        (size[0] / 2) - outer_radius,
+        (size[1] / 2) - outer_radius,
+        (size[0] / 2) + outer_radius,
+        (size[1] / 2) + outer_radius,
+    )
+    inner_circle = (
+        (size[0] / 2) - inner_radius,
+        (size[1] / 2) - inner_radius,
+        (size[0] / 2) + inner_radius,
+        (size[1] / 2) + inner_radius,
+    )
     draw.ellipse(outer_circle, fill=discord_color3)
     draw.ellipse(inner_circle, fill=discord_color4)
 
@@ -199,7 +226,9 @@ async def get_level_image(level):
     font_size = get_text_size(font, level)
     x_loc = (image.size[0] / 2) - (font_size[0] / 2)
     y_loc = (image.size[1] / 2) - (font_size[1] / 2)
-    draw.text((x_loc, y_loc + font_adjustment_y), level, font=font, fill=faded_yellow_color)
+    draw.text(
+        (x_loc, y_loc + font_adjustment_y), level, font=font, fill=faded_yellow_color
+    )
 
     return image
 
@@ -211,7 +240,7 @@ async def get_ability_image(ability_id, hero_id=None):
             return await get_talents_image(ability_id, hero_id)
         return await get_url_image(ability_infos[ability_id]["icon"])
     except KeyError:
-        return Image.new('RGBA', (10, 10), (0, 0, 0, 0))
+        return Image.new("RGBA", (10, 10), (0, 0, 0, 0))
 
 
 async def get_talents_image(abilities, hero_id):
@@ -236,11 +265,9 @@ async def get_talents_image(abilities, hero_id):
         return Image.open(filename)
     filename = await httpgetter.cache.new(uri, "png")
 
-    image = Image.open(settings.resource(
-        "images/talents/talent_background.png"))
+    image = Image.open(settings.resource("images/talents/talent_background.png"))
     for slot in talent_slots:
-        slot_image = Image.open(settings.resource(
-            f"images/talents/talent_{slot}.png"))
+        slot_image = Image.open(settings.resource(f"images/talents/talent_{slot}.png"))
         image = paste_image(image, slot_image)
 
     image.save(filename, format="PNG")
@@ -256,24 +283,36 @@ async def get_neutral_image(item):
     img_scale = circle_diameter / 64
 
     inner_radius = circle_diameter / 2
-    inner_circle = ((size[0] / 2) - inner_radius, (size[1] / 2) - inner_radius,
-                    (size[0] / 2) + inner_radius, (size[1] / 2) + inner_radius)
+    inner_circle = (
+        (size[0] / 2) - inner_radius,
+        (size[1] / 2) - inner_radius,
+        (size[0] / 2) + inner_radius,
+        (size[1] / 2) + inner_radius,
+    )
     outer_radius = inner_radius + circle_thickness
-    outer_circle = ((size[0] / 2) - outer_radius, (size[1] / 2) - outer_radius,
-                    (size[0] / 2) + outer_radius, (size[1] / 2) + outer_radius)
+    outer_circle = (
+        (size[0] / 2) - outer_radius,
+        (size[1] / 2) - outer_radius,
+        (size[0] / 2) + outer_radius,
+        (size[1] / 2) + outer_radius,
+    )
     if item:
         draw = ImageDraw.Draw(background)
         draw.ellipse(outer_circle, fill=circle_color)
 
         item_img = await get_item_image(item)
         item_img = item_img.resize(
-            (int(item_img.size[0] * img_scale), int(item_img.size[1] * img_scale)))
-        item_img = item_img.crop((
-            math.floor((item_img.size[0] - background.size[0]) / 2),
-            math.floor((item_img.size[1] - background.size[1]) / 2),
-            item_img.size[0] -
-            math.ceil((item_img.size[0] - background.size[0]) / 2),
-            item_img.size[1] - math.ceil((item_img.size[1] - background.size[1]) / 2))
+            (int(item_img.size[0] * img_scale), int(item_img.size[1] * img_scale))
+        )
+        item_img = item_img.crop(
+            (
+                math.floor((item_img.size[0] - background.size[0]) / 2),
+                math.floor((item_img.size[1] - background.size[1]) / 2),
+                item_img.size[0]
+                - math.ceil((item_img.size[0] - background.size[0]) / 2),
+                item_img.size[1]
+                - math.ceil((item_img.size[1] - background.size[1]) / 2),
+            )
         )
         mask_circle = Image.new("RGBA", background.size)
         mask_draw = ImageDraw.Draw(mask_circle)
@@ -284,6 +323,7 @@ async def get_neutral_image(item):
         return Image.alpha_composite(background, temp_image)
     else:
         return background
+
 
 # gets an image for the matches table with the icons for what aghanim effects are active for the given player
 
@@ -296,7 +336,7 @@ async def get_active_aghs_image(player):
         # 108 is aghs scepter's item id
         if player.get(f"item_{i}", 0) == 108:
             is_scepter_active = True
-    for buff in (player.get("permanent_buffs") or []):
+    for buff in player.get("permanent_buffs") or []:
         # for buffs, 2 is scepter, 12 is shard: https://github.com/odota/dotaconstants/blob/master/json/permanent_buffs.json
         if buff["permanent_buff"] == 2:
             is_scepter_active = True
@@ -312,9 +352,12 @@ async def get_active_aghs_image(player):
     scepter_image = await get_url_image(vpkurl + scepter_image)
     shard_image = await get_url_image(vpkurl + shard_image)
 
-    image = Image.new("RGBA", (
-        max(scepter_image.size[0], shard_image.size[0]),
-        scepter_image.size[1] + shard_image.size[1])
+    image = Image.new(
+        "RGBA",
+        (
+            max(scepter_image.size[0], shard_image.size[0]),
+            scepter_image.size[1] + shard_image.size[1],
+        ),
     )
 
     image = paste_image(image, scepter_image, 2, 0)
@@ -366,21 +409,21 @@ async def get_spell_images(spells):
 
 
 def won_lane(curr_player, players):
-    laneid = curr_player['lane']
+    laneid = curr_player["lane"]
     radiant_eff = 0
     dire_eff = 0
 
     for player in players:
-        if player['lane'] == laneid and not player.get('is_roaming', False):
+        if player["lane"] == laneid and not player.get("is_roaming", False):
             # this player is in this lane
-            if (player['isRadiant']):  # radiant player
-                if player.get('lane_efficiency', 0) > radiant_eff:
-                    radiant_eff = player['lane_efficiency']
+            if player["isRadiant"]:  # radiant player
+                if player.get("lane_efficiency", 0) > radiant_eff:
+                    radiant_eff = player["lane_efficiency"]
             else:  # dire player
-                if player.get('lane_efficiency', 0) > dire_eff:
-                    dire_eff = player['lane_efficiency']
+                if player.get("lane_efficiency", 0) > dire_eff:
+                    dire_eff = player["lane_efficiency"]
 
-    if curr_player['isRadiant']:
+    if curr_player["isRadiant"]:
         return radiant_eff > dire_eff
     else:
         return dire_eff > radiant_eff
@@ -389,24 +432,28 @@ def won_lane(curr_player, players):
 def get_lane(player):
     lane_dict = {1: "Bot", 3: "Top", None: ""}
     lane_role_dict = {1: "Safe", 2: "Mid", 3: "Off", 4: "Jungle", None: ""}
-    if player.get('is_roaming'):
+    if player.get("is_roaming"):
         return "Roam"
-    elif player.get('lane') in lane_dict:
+    elif player.get("lane") in lane_dict:
         return f"{lane_role_dict[player.get('lane_role')]}"
     else:
-        return lane_role_dict[player.get('lane_role')]
+        return lane_role_dict[player.get("lane_role")]
 
 
 async def get_rank_info(account_id):
     if account_id is None:
         return (None, None)
 
-    player = await httpgetter.get(f"https://api.opendota.com/api/players/{account_id}?api_key={settings.odota}", cache=False, errors={
-        404: "Dats not a valid query. Take a look at the OpenDota API Documentation: https://docs.opendota.com",
-        521: "[http error 521] Looks like the OpenDota API is down or somethin, so ya gotta wait a sec",
-        502: "[http error 502] Looks like there was an issue with the OpenDota API. Try again in a bit",
-        "default": "OpenDota said we did things wrong 😢. http status code: {}"
-    })
+    player = await httpgetter.get(
+        f"https://api.opendota.com/api/players/{account_id}?api_key={settings.odota}",
+        cache=False,
+        errors={
+            404: "Dats not a valid query. Take a look at the OpenDota API Documentation: https://docs.opendota.com",
+            521: "[http error 521] Looks like the OpenDota API is down or somethin, so ya gotta wait a sec",
+            502: "[http error 502] Looks like there was an issue with the OpenDota API. Try again in a bit",
+            "default": "OpenDota said we did things wrong 😢. http status code: {}",
+        },
+    )
     return (player.get("rank_tier"), player.get("leaderboard_rank"))
 
 
@@ -414,18 +461,30 @@ def get_benchmark(benchmarks):
     if benchmarks is None:
         return None
 
-    keys = ['gold_per_min', 'xp_per_min', 'kills_per_min',
-            'last_hits_per_min', 'hero_damage_per_min', 'hero_healing_per_min',
-            'tower_damage', 'stuns_per_min', 'lhten']
+    keys = [
+        "gold_per_min",
+        "xp_per_min",
+        "kills_per_min",
+        "last_hits_per_min",
+        "hero_damage_per_min",
+        "hero_healing_per_min",
+        "tower_damage",
+        "stuns_per_min",
+        "lhten",
+    ]
 
-    colors = ['#FF4C4C', '#FFAB40', '#C9AF1E', '#66BBFF', '#66BB6B']
+    colors = ["#FF4C4C", "#FFAB40", "#C9AF1E", "#66BBFF", "#66BB6B"]
     brackets = [0, 20, 40, 60, 80]
 
     total = 0
     count = 0
 
     for key in keys:
-        pct = benchmarks.get(key).get('pct', 0)
+        aspect = benchmarks.get(key)
+        if aspect is None:
+            continue
+
+        pct = aspect.get("pct", 0)
         if pct is not None and pct > 0:
             total += pct
             count += 1
@@ -434,7 +493,7 @@ def get_benchmark(benchmarks):
         return None
 
     overall = round((total / count) * 100)
-    color = ''
+    color = ""
 
     for i, bracket in enumerate(brackets, start=0):
         if overall > bracket:
@@ -443,11 +502,14 @@ def get_benchmark(benchmarks):
     return {"pct": overall, "color": color}
 
 
-async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents):
-    draw_bear_row = player["hero_id"] == 80 and len(
-        player.get("additional_units") or []) > 0
-    bench = get_benchmark(player.get('benchmarks'))
-    (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
+async def add_player_row(
+    table, match, player, is_parsed, is_ability_draft, has_talents
+):
+    draw_bear_row = (
+        player["hero_id"] == 80 and len(player.get("additional_units") or []) > 0
+    )
+    bench = get_benchmark(player.get("benchmarks"))
+    (rank_tier, leaderboard_rank) = await get_rank_info(player.get("account_id"))
 
     row = [
         ColorCell(width=5, color=("green" if player["isRadiant"] else "red")),
@@ -461,17 +523,16 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
     ]
 
     if bench is not None:
-        row.extend([
-            TextCell(f"{bench['pct']}%", color=bench['color'])
-        ])
+        row.extend([TextCell(f"{bench['pct']}%", color=bench["color"])])
 
     # add lone druid items row
     if draw_bear_row:
         bear_unit = player["additional_units"][0]
-        bear_image = await get_url_image(vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png")
+        bear_image = await get_url_image(
+            vpkurl + "/panorama/images/heroes/npc_dota_hero_spirit_bear_png.png"
+        )
         bear_row = [
-            ColorCell(width=8, color=(
-                "green" if player["isRadiant"] else "red")),
+            ColorCell(width=8, color=("green" if player["isRadiant"] else "red")),
             ImageCell(img=bear_image, height=48),
             EmptyCell(),
             EmptyCell(),
@@ -485,28 +546,31 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
         bear_row.append(ImageCell(img=await get_item_images(bear_unit), height=48))
 
     if is_parsed:
-        row.extend([
-            TextCell(player.get("actions_per_min")),
-            TextCell(get_lane(player)),
-            ImageCell(img=await get_active_aghs_image(player), height=48)
-        ])
+        row.extend(
+            [
+                TextCell(player.get("actions_per_min")),
+                TextCell(get_lane(player)),
+                ImageCell(img=await get_active_aghs_image(player), height=48),
+            ]
+        )
     if has_talents:
         # row.append(ImageCell(img=await get_talents_image(player.get("ability_upgrades_arr"), player["hero_id"]), height=48))
         row.append(ImageCell(img=await get_item_images(player), height=48))
     if is_ability_draft:
+
         def ad_ability_filter(ability_id):
             ability = ability_infos[ability_id]["entity"]
             return not (ability.is_talent or ("ad_special_bonus" in ability.name))
-        abilities = filter(ad_ability_filter,
-                           player.get("ability_upgrades_arr"))
+
+        abilities = filter(ad_ability_filter, player.get("ability_upgrades_arr"))
         abilities = list(set(abilities))
         abilities = sorted(
-            abilities, key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20)
+            abilities,
+            key=lambda a: ability_infos[a]["slot"] if ability_infos[a]["slot"] else 20,
+        )
         if len(abilities) > 4:
             abilities = abilities[:4]
-        row[3:3] = [
-            ImageCell(img=await get_spell_images(abilities), height=48)
-        ]
+        row[3:3] = [ImageCell(img=await get_spell_images(abilities), height=48)]
 
     if (player.get("leaver_status", 0) or 0) > 1:
         for cell in row[2:]:
@@ -520,7 +584,7 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
 def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
     if (player.get("party_size", 0) or 0) <= 1:
         return EmptyCell()
-    team_colors = [  "purple", "turquoise", "orange", "blue" ]
+    team_colors = ["purple", "turquoise", "orange", "blue"]
     all_teams = []
     player_slots_in_team = []
     for p in match["players"]:
@@ -545,22 +609,19 @@ def create_party_cell(match, player, can_be_top=True, can_be_bottom=True):
     # custom cell renderer for some curviness
 
     def custom_cell_render(draw, image, x, y, width, height):
-        corner = Image.new('RGBA', (width, width), (0, 0, 0, 0))
+        corner = Image.new("RGBA", (width, width), (0, 0, 0, 0))
         draw_corner = ImageDraw.Draw(corner)
-        draw_corner.pieslice((0, 0, width * 2, width * 2),
-                             180, 270, fill=cell_color)
+        draw_corner.pieslice((0, 0, width * 2, width * 2), 180, 270, fill=cell_color)
         if position == "top":
-            draw.rectangle(
-                [x, y + width, x + width, y + height], fill=cell_color)
+            draw.rectangle([x, y + width, x + width, y + height], fill=cell_color)
             image = paste_image(image, corner.rotate(0), x, y)
         elif position == "bottom":
-            draw.rectangle(
-                [x, y, x + width, y + height - width], fill=cell_color)
-            image = paste_image(image, corner.rotate(90),
-                                x, y + height - width)
+            draw.rectangle([x, y, x + width, y + height - width], fill=cell_color)
+            image = paste_image(image, corner.rotate(90), x, y + height - width)
         return image, draw
 
     return CustomRenderCell(width=8, render_func=custom_cell_render)
+
 
 # gets the hero image and adds a disconenct icon if applicable
 
@@ -569,18 +630,26 @@ async def get_hero_player_status_image(player):
     image = await get_hero_image(player["hero_id"])
     if (player.get("leaver_status", 0) or 0) <= 1:
         return image
-    disconnect_image = await get_url_image(vpkurl + "/panorama/images/hud/reborn/icon_disconnect_png.png")
-    disconnect_image = disconnect_image.resize((image.width, int(
-        (image.width / disconnect_image.width) * disconnect_image.height)), Image.ANTIALIAS)
-    image = paste_image(image, disconnect_image, 0,
-                        (image.height // 2) - (disconnect_image.height // 2))
+    disconnect_image = await get_url_image(
+        vpkurl + "/panorama/images/hud/reborn/icon_disconnect_png.png"
+    )
+    disconnect_image = disconnect_image.resize(
+        (
+            image.width,
+            int((image.width / disconnect_image.width) * disconnect_image.height),
+        ),
+        Image.ANTIALIAS,
+    )
+    image = paste_image(
+        image, disconnect_image, 0, (image.height // 2) - (disconnect_image.height // 2)
+    )
     return image
 
 
 def truncate(text, max_size):
     if len(text) <= max_size:
         return text
-    text = text[:max_size - 3]
+    text = text[: max_size - 3]
     text = re.sub(r"[\.\s]+$", "", text)
     return text + "..."
 
@@ -588,8 +657,7 @@ def truncate(text, max_size):
 async def draw_match_table(match):
     is_parsed = match.get("version")
     table = Table(background=discord_color2)
-    has_ability_upgrades = match["players"][0].get(
-        "ability_upgrades_arr") is not None
+    has_ability_upgrades = match["players"][0].get("ability_upgrades_arr") is not None
     is_ability_draft = match["game_mode"] == 18 and has_ability_upgrades
     has_talents = has_ability_upgrades and match["start_time"] > 1481500800
     # Header
@@ -602,21 +670,15 @@ async def draw_match_table(match):
         TextCell("K", horizontal_align="center"),
         TextCell("D", horizontal_align="center"),
         TextCell("A", horizontal_align="center"),
-        TextCell("BM")
+        TextCell("BM"),
     ]
     if is_parsed:
-        headers.extend([
-            TextCell("APM"),
-            TextCell("Lane"),
-            TextCell("")
-        ])
+        headers.extend([TextCell("APM"), TextCell("Lane"), TextCell("")])
     # if has_talents:
-        # headers.append(TextCell(""))
+    # headers.append(TextCell(""))
     headers.append(TextCell("Items"))
     if is_ability_draft:
-        headers[3:3] = [
-            TextCell("Abilities")
-        ]
+        headers[3:3] = [TextCell("Abilities")]
 
     table.add_row(headers)
     for cell in table.rows[0]:
@@ -624,13 +686,18 @@ async def draw_match_table(match):
 
     # Do players
     for player in match["players"]:
-        if player['isRadiant']:
-            await add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents)
-    table.add_row([ColorCell(color=discord_color1, height=5)
-                  for i in range(len(headers))])
+        if player["isRadiant"]:
+            await add_player_row(
+                table, match, player, is_parsed, is_ability_draft, has_talents
+            )
+    table.add_row(
+        [ColorCell(color=discord_color1, height=5) for i in range(len(headers))]
+    )
     for player in match["players"]:
-        if not player['isRadiant']:
-            await add_player_row(table, match, player, is_parsed, is_ability_draft, has_talents)
+        if not player["isRadiant"]:
+            await add_player_row(
+                table, match, player, is_parsed, is_ability_draft, has_talents
+            )
     return table.render()
 
 
@@ -639,19 +706,28 @@ async def create_postgame_image(match, streamer_win):
     table_image = await draw_match_table(match)
 
     image = Image.new(
-        'RGBA', (table_image.size[0] + (table_border * 2), table_image.size[1] + table_border + 64))
+        "RGBA",
+        (
+            table_image.size[0] + (table_border * 2),
+            table_image.size[1] + table_border + 64,
+        ),
+    )
     draw = ImageDraw.Draw(image)
     draw.rectangle([0, 0, image.size[0], image.size[1]], fill=discord_color2)
     draw.rectangle([0, 64, image.size[0], image.size[1]], fill=discord_color1)
     image.paste(table_image, (table_border, 64))
 
-    title = TextCell(f"{'Radiant' if match['radiant_win'] else 'Dire'} Victory", font_size=48, color=(
-        "green" if match['radiant_win'] else "red"))
+    title = TextCell(
+        f"{'Radiant' if match['radiant_win'] else 'Dire'} Victory",
+        font_size=48,
+        color=("green" if match["radiant_win"] else "red"),
+    )
     # title = TextCell(f"{'Victory' if streamer_win else 'Defeat'}", font_size=48, color=("green" if streamer_win else "red"))
     title.render(draw, image, 64, 0, image.size[0] - 64, 64)
 
-    team_icon = Image.open(
-        radiant_icon if match['radiant_win'] else dire_icon).resize((64, 64))
+    team_icon = Image.open(radiant_icon if match["radiant_win"] else dire_icon).resize(
+        (64, 64)
+    )
     temp_image = Image.new("RGBA", image.size)
     temp_image.paste(team_icon, (0, 0))
     image = Image.alpha_composite(image, temp_image)
@@ -668,18 +744,27 @@ async def create_match_image(match):
     table_image = await draw_match_table(match)
 
     image = Image.new(
-        'RGBA', (table_image.size[0] + (table_border * 2), table_image.size[1] + table_border + 64))
+        "RGBA",
+        (
+            table_image.size[0] + (table_border * 2),
+            table_image.size[1] + table_border + 64,
+        ),
+    )
     draw = ImageDraw.Draw(image)
     draw.rectangle([0, 0, image.size[0], image.size[1]], fill=discord_color2)
     draw.rectangle([0, 64, image.size[0], image.size[1]], fill=discord_color1)
     image.paste(table_image, (table_border, 64))
 
-    title = TextCell(f"{'Radiant' if match['radiant_win'] else 'Dire'} Victory", font_size=48, color=(
-        "green" if match['radiant_win'] else "red"))
+    title = TextCell(
+        f"{'Radiant' if match['radiant_win'] else 'Dire'} Victory",
+        font_size=48,
+        color=("green" if match["radiant_win"] else "red"),
+    )
     title.render(draw, image, 64, 0, image.size[0] - 64, 64)
 
-    team_icon = Image.open(
-        radiant_icon if match['radiant_win'] else dire_icon).resize((64, 64))
+    team_icon = Image.open(radiant_icon if match["radiant_win"] else dire_icon).resize(
+        (64, 64)
+    )
     temp_image = Image.new("RGBA", image.size)
     temp_image.paste(team_icon, (0, 0))
     image = Image.alpha_composite(image, temp_image)
@@ -692,8 +777,12 @@ async def create_match_image(match):
 
 
 async def combine_image_halves(img_url1, img_url2):
-    img1 = Image.open(await httpgetter.get(img_url1, "bytes", cache=True)).convert("RGBA")
-    img2 = Image.open(await httpgetter.get(img_url2, "bytes", cache=True)).convert("RGBA")
+    img1 = Image.open(await httpgetter.get(img_url1, "bytes", cache=True)).convert(
+        "RGBA"
+    )
+    img2 = Image.open(await httpgetter.get(img_url2, "bytes", cache=True)).convert(
+        "RGBA"
+    )
 
     pixels1 = img1.load()
     pixels2 = img2.load()
@@ -729,13 +818,16 @@ def optimize_gif(uri, filename):
 
     while file_size >= size_limit and i < len(optimization):
         output = run_command(
-            ["gifsicle", "--conserve-memory", filename, "-o", filename] + optimization[i])
+            ["gifsicle", "--conserve-memory", filename, "-o", filename]
+            + optimization[i]
+        )
         file_size = os.path.getsize(filename) / 1000000
         logger.info(f"bytes: {file_size} MB")
         i += 1
 
     if file_size >= size_limit:
         raise ValueError(f"couldn't optimize {uri} far enough")
+
 
 # places an icon on the map at the indicated x/y using the dota coordinant system
 # scale is how much to scale the icon
@@ -749,12 +841,17 @@ def place_icon_on_map(map_image, icon, x, y):
     scale = map_image.width / map_coord_size
     x = (x - map_coord_padding) * scale
     y = (map_coord_size - (y - map_coord_padding)) * scale
-    return paste_image(map_image, icon, int(x - (icon.width / 2)), int(y - (icon.height / 2)))
+    return paste_image(
+        map_image, icon, int(x - (icon.width / 2)), int(y - (icon.height / 2))
+    )
+
 
 # wraps the main gif creation code so it doesnt block
 
 
-async def create_dota_gif(bot, match, stratz_match, start_time, end_time, ms_per_second=100):
+async def create_dota_gif(
+    bot, match, stratz_match, start_time, end_time, ms_per_second=100
+):
     uri = f"match_gif:{match['match_id']}:{start_time}:{end_time}:{ms_per_second}"
 
     filename = await httpgetter.cache.get_filename(uri)
@@ -768,21 +865,33 @@ async def create_dota_gif(bot, match, stratz_match, start_time, end_time, ms_per
         hero_id = player["heroId"]
         hero_icons[str(hero_id)] = await get_hero_icon(hero_id)
 
-    return await bot.loop.run_in_executor(ThreadPoolExecutor(max_workers=1), create_dota_gif_main, match, stratz_match, start_time, end_time, ms_per_second, filename, uri, hero_icons)
+    return await bot.loop.run_in_executor(
+        ThreadPoolExecutor(max_workers=1),
+        create_dota_gif_main,
+        match,
+        stratz_match,
+        start_time,
+        end_time,
+        ms_per_second,
+        filename,
+        uri,
+        hero_icons,
+    )
+
 
 # the main code for creating the dota gif. this should be run in a separate thread because it blocks
 
 
-def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_second, filename, uri, hero_icons):
+def create_dota_gif_main(
+    match, stratz_match, start_time, end_time, ms_per_second, filename, uri, hero_icons
+):
     building_data = read_json(settings.resource("json/building_data.json"))
 
     map_image = Image.open(settings.resource("images/map/dota_map.png"))
     map_image = map_image.resize((256, 256), Image.ANTIALIAS)
 
-    clock_bg_image = Image.open(settings.resource(
-        "images/map/clock_background.png"))
-    font = ImageFont.truetype(settings.resource(
-        "images/arial_unicode_bold.ttf"), 16)
+    clock_bg_image = Image.open(settings.resource("images/map/clock_background.png"))
+    font = ImageFont.truetype(settings.resource("images/arial_unicode_bold.ttf"), 16)
 
     reverse = end_time < start_time
     if reverse:
@@ -804,13 +913,12 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
         scale = 0.75
         icon = hero_icons[str(player["heroId"])]
         icon = icon.resize(
-            (int(icon.width * scale), int(icon.height * scale)), Image.ANTIALIAS)
+            (int(icon.width * scale), int(icon.height * scale)), Image.ANTIALIAS
+        )
         # icon = outline_image(icon, 2, (0, 255, 0) if player["isRadiant"] else (255, 0, 0))
         x = 0
         y = 0
-        data = {
-            "icon": icon
-        }
+        data = {"icon": icon}
 
         for t in range(match_start, end_time + 1):
             event = next((e for e in positionEvents if e["time"] == t), None)
@@ -839,17 +947,12 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
         size = {
             "tower": int(map_image.width * (16 / 300)),
             "barracks": int(map_image.width * (12 / 300)),
-            "ancient": int(map_image.width * (25 / 300))
+            "ancient": int(map_image.width * (25 / 300)),
         }[b["type"]]
         icon = icon.resize((size, size), Image.ANTIALIAS)
 
-        building = {
-            "icon": icon,
-            "x": b["x"],
-            "y": b["y"]
-        }
-        event = next(
-            (e for e in objectiveEvents if e.get("key") == b["key"]), None)
+        building = {"icon": icon, "x": b["x"], "y": b["y"]}
+        event = next((e for e in objectiveEvents if e.get("key") == b["key"]), None)
         if event:
             building["death"] = event["time"]
         buildings.append(building)
@@ -864,11 +967,7 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
     for t in range(match_start, end_time + 1):
         events = filter(lambda e: e["time"] == t, runeEvents)
         for e in filter(lambda e: e["time"] == t and e["action"] == 0, runeEvents):
-            current_runes[e["id"]] = {
-                "type": e["runeType"],
-                "x": e["x"],
-                "y": e["y"]
-            }
+            current_runes[e["id"]] = {"type": e["runeType"], "x": e["x"], "y": e["y"]}
         if t >= start_time and current_runes:
             runes[t] = current_runes.copy()
         for e in filter(lambda e: e["time"] == t and e["action"] == 1, runeEvents):
@@ -880,10 +979,24 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
         scale = 0.5
         icon = Image.open(settings.resource(f"images/map/rune_{i}.png"))
         rune_icons[i] = icon.resize(
-            (int(icon.width * scale), int(icon.height * scale)), Image.ANTIALIAS)
+            (int(icon.width * scale), int(icon.height * scale)), Image.ANTIALIAS
+        )
 
-    process = subprocess.Popen(["gifsicle", "--multifile", "-d", str(ms_per_second // 10),
-                               "--conserve-memory", "-O3", "-", "-o", filename], stdin=subprocess.PIPE, bufsize=-1)
+    process = subprocess.Popen(
+        [
+            "gifsicle",
+            "--multifile",
+            "-d",
+            str(ms_per_second // 10),
+            "--conserve-memory",
+            "-O3",
+            "-",
+            "-o",
+            filename,
+        ],
+        stdin=subprocess.PIPE,
+        bufsize=-1,
+    )
 
     time_range = range(start_time, end_time + 1)
 
@@ -894,19 +1007,25 @@ def create_dota_gif_main(match, stratz_match, start_time, end_time, ms_per_secon
         image = map_image.copy()
         for building in buildings:
             if t < building.get("death", t + 1):
-                image = place_icon_on_map(image, building["icon"], building["x"], building["y"])
+                image = place_icon_on_map(
+                    image, building["icon"], building["x"], building["y"]
+                )
         for player in players:
             icon = player["icon"].convert("LA") if player[t]["dead"] else player["icon"]
             image = place_icon_on_map(image, icon, player[t]["x"], player[t]["y"])
         for rune in runes.get(t, {}):
             rune = runes[t][rune]
             if rune["type"] in rune_icons:
-                image = place_icon_on_map(image, rune_icons[rune["type"]], rune["x"], rune["y"])
+                image = place_icon_on_map(
+                    image, rune_icons[rune["type"]], rune["x"], rune["y"]
+                )
 
-        image = paste_image(image, clock_bg_image, (image.width // 2) - (clock_bg_image.width // 2), 0)
+        image = paste_image(
+            image, clock_bg_image, (image.width // 2) - (clock_bg_image.width // 2), 0
+        )
         draw = ImageDraw.Draw(image)
         clock_text = get_pretty_time(abs(t))
-        clock_pos = ((image.width // 2) - (get_text_size(font, clock_text)[0] // 2), -1)		
+        clock_pos = ((image.width // 2) - (get_text_size(font, clock_text)[0] // 2), -1)
         draw.text(clock_pos, clock_text, font=font, fill="#ffffff")
 
         image.save(process.stdin, "gif")
@@ -940,16 +1059,26 @@ async def create_dota_emoticon(emoticon, url):
     frame_width = image.width / emoticon.frames
 
     try:
-        process = subprocess.Popen(["gifsicle",
-                                    "--multifile",
-                                    "-d", str(emoticon.ms_per_frame // 10),
-                                    "-U", "--disposal=bg",
-                                    "--loopcount=0",
-                                    "--transparent", "0",
-                                    "-", "-o", filename], stdin=subprocess.PIPE, bufsize=-1)
+        process = subprocess.Popen(
+            [
+                "gifsicle",
+                "--multifile",
+                "-d",
+                str(emoticon.ms_per_frame // 10),
+                "-U",
+                "--disposal=bg",
+                "--loopcount=0",
+                "--transparent",
+                "0",
+                "-",
+                "-o",
+                filename,
+            ],
+            stdin=subprocess.PIPE,
+            bufsize=-1,
+        )
     except OSError:
-        raise UserError(
-            "Whoever setup this mangobyte doesn't have gifsicle installed")
+        raise UserError("Whoever setup this mangobyte doesn't have gifsicle installed")
 
     for i in range(0, emoticon.frames):
         box = (i * frame_width, 0, (i + 1) * frame_width, image.height)
@@ -988,12 +1117,14 @@ async def dota_rank_icon(rank_tier, leaderboard_rank):
         elif leaderboard_rank <= 100:
             modifier = "b"
 
-    image = Image.open(settings.resource(
-        f"images/ranks/rank_{badge_num}{modifier}.png"))
+    image = Image.open(
+        settings.resource(f"images/ranks/rank_{badge_num}{modifier}.png")
+    )
 
     if stars_num > 0:
-        stars_image = Image.open(settings.resource(
-            f"images/ranks/stars_{stars_num}.png"))
+        stars_image = Image.open(
+            settings.resource(f"images/ranks/stars_{stars_num}.png")
+        )
         image = paste_image(image, stars_image, 0, 0)
 
     if leaderboard_rank:
@@ -1002,8 +1133,9 @@ async def dota_rank_icon(rank_tier, leaderboard_rank):
         box_width = 256
         box_height = 50
 
-        cell = TextCell(leaderboard_rank, color="#feffe5",
-                        font_size=50, horizontal_align="center")
+        cell = TextCell(
+            leaderboard_rank, color="#feffe5", font_size=50, horizontal_align="center"
+        )
         cell.render(draw, image, 0, 232 - box_height, box_width, box_height)
 
     image.save(filename, "png")
@@ -1024,7 +1156,7 @@ def get_datetime_cell(match, region_data):
     str_time = match_date.strftime(f"%{lead_char}I:%M %p")
     return DoubleCell(
         TextCell(str_date, font_size=18, horizontal_align="center"),
-        TextCell(str_time, font_size=18, horizontal_align="center")
+        TextCell(str_time, font_size=18, horizontal_align="center"),
     )
 
 
@@ -1039,23 +1171,27 @@ async def draw_meta_table(sorted_heroes, heroes):
         TextCell("Hero", background=discord_color1, padding=6),
         TextCell("", background=discord_color1, padding=6),
         TextCell("Win %", background=discord_color1, padding=6),
-        TextCell("Pick/Ban %", background=discord_color1, padding=6)
+        TextCell("Pick/Ban %", background=discord_color1, padding=6),
     ]
 
     table.add_row(headers)
 
     for hero in sorted_heroes:
-        table.add_row([
-            ImageCell(img=await get_hero_image(hero["hero_id"]), height=48),
-            TextCell(get_hero_name(hero["hero_id"]), fontsize=24),
-            TextCell(f"{get_hero_winrate(hero):.0%}", fontsize=24),
-            TextCell(
-                f"{get_hero_pickban_percent(hero, heroes):.0%}", fontsize=24)
-        ])
+        table.add_row(
+            [
+                ImageCell(img=await get_hero_image(hero["hero_id"]), height=48),
+                TextCell(get_hero_name(hero["hero_id"]), fontsize=24),
+                TextCell(f"{get_hero_winrate(hero):.0%}", fontsize=24),
+                TextCell(f"{get_hero_pickban_percent(hero, heroes):.0%}", fontsize=24),
+            ]
+        )
 
     image = table.render()
     border_image = Image.new(
-        'RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
+        "RGBA",
+        (image.size[0] + (border_size * 2), image.size[1] + border_size),
+        color=discord_color1,
+    )
     image = paste_image(border_image, image, border_size, 0)
 
     fp = BytesIO()
@@ -1081,53 +1217,71 @@ async def draw_matches_table(matches, game_strings):
         TextCell("A", horizontal_align="center"),
         TextCell("Duration"),
         TextCell("Type"),
-        TextCell("Date")
+        TextCell("Date"),
     ]
     table.add_row(headers)
     for cell in table.rows[0]:
         cell.background = discord_color1
 
-    table.add_row([ColorCell(color=discord_color1, height=6)
-                  for i in range(len(headers))])
+    table.add_row(
+        [ColorCell(color=discord_color1, height=6) for i in range(len(headers))]
+    )
     first = True
     for match in matches:
-        won_match = bool(match["radiant_win"]) == bool(
-            match["player_slot"] < 128)
-        game_mode = game_strings.get(
-            f"game_mode_{match['game_mode']}", "Unknown")
-        lobby_type = game_strings.get(
-            f"lobby_type_{match['lobby_type']}", "Unknown")
+        won_match = bool(match["radiant_win"]) == bool(match["player_slot"] < 128)
+        game_mode = game_strings.get(f"game_mode_{match['game_mode']}", "Unknown")
+        lobby_type = game_strings.get(f"lobby_type_{match['lobby_type']}", "Unknown")
         if first:
             first = False
         else:
-            table.add_row([ColorCell(color=discord_color2, height=12)
-                          for i in range(len(headers))])
-        table.add_row([
-            ImageCell(img=await get_hero_image(match["hero_id"]), height=48),
-            DoubleCell(
-                TextCell(get_hero_name(match["hero_id"]), font_size=24),
-                TextCell(match.get("match_id"), font_size=12,
-                         horizontal_align="left", color=grey_color)
-            ),
-            TextCell("Win" if won_match else "Loss", color=(
-                "green" if won_match else "red"), horizontal_align="center"),
-            TextCell(match.get("kills")),
-            TextCell(match.get("deaths")),
-            TextCell(match.get("assists")),
-            TextCell(format_duration_simple(match.get("duration")),
-                     horizontal_align="center"),
-            DoubleCell(
-                TextCell(game_mode, font_size=18,
-                         padding_right=15, color=grey_color),
-                TextCell(lobby_type, font_size=18,
-                         padding_right=15, color=grey_color)
-            ),
-            get_datetime_cell(match, region_data)
-        ])
+            table.add_row(
+                [
+                    ColorCell(color=discord_color2, height=12)
+                    for i in range(len(headers))
+                ]
+            )
+        table.add_row(
+            [
+                ImageCell(img=await get_hero_image(match["hero_id"]), height=48),
+                DoubleCell(
+                    TextCell(get_hero_name(match["hero_id"]), font_size=24),
+                    TextCell(
+                        match.get("match_id"),
+                        font_size=12,
+                        horizontal_align="left",
+                        color=grey_color,
+                    ),
+                ),
+                TextCell(
+                    "Win" if won_match else "Loss",
+                    color=("green" if won_match else "red"),
+                    horizontal_align="center",
+                ),
+                TextCell(match.get("kills")),
+                TextCell(match.get("deaths")),
+                TextCell(match.get("assists")),
+                TextCell(
+                    format_duration_simple(match.get("duration")),
+                    horizontal_align="center",
+                ),
+                DoubleCell(
+                    TextCell(
+                        game_mode, font_size=18, padding_right=15, color=grey_color
+                    ),
+                    TextCell(
+                        lobby_type, font_size=18, padding_right=15, color=grey_color
+                    ),
+                ),
+                get_datetime_cell(match, region_data),
+            ]
+        )
     image = table.render()
 
     border_image = Image.new(
-        'RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
+        "RGBA",
+        (image.size[0] + (border_size * 2), image.size[1] + border_size),
+        color=discord_color1,
+    )
     image = paste_image(border_image, image, border_size, 0)
 
     fp = BytesIO()
@@ -1144,7 +1298,7 @@ async def draw_hero_talents(hero):
         [talents[7], talents[6]],
         [talents[5], talents[4]],
         [talents[3], talents[2]],
-        [talents[1], talents[0]]
+        [talents[1], talents[0]],
     ]
     image = Image.open(settings.resource("images/talents.png"))
     draw = ImageDraw.Draw(image)
@@ -1154,8 +1308,9 @@ async def draw_hero_talents(hero):
     header_width = 655
     header_height = 51
 
-    cell = TextCell(hero.localized_name, color="#dddddd",
-                    font_size=28, horizontal_align="center")
+    cell = TextCell(
+        hero.localized_name, color="#dddddd", font_size=28, horizontal_align="center"
+    )
     cell.render(draw, image, header_x, header_y, header_width, header_height)
 
     box_width = 306
@@ -1173,8 +1328,14 @@ async def draw_hero_talents(hero):
             y = start_y + (i * (box_height + box_margin_y))
             text = talent_rows[i][j]
 
-            cell = TextCell(text, color="#cca770", font_size=20, wrap=True, padding=[
-                            0, 15, 0, 15], horizontal_align="center")
+            cell = TextCell(
+                text,
+                color="#cca770",
+                font_size=20,
+                wrap=True,
+                padding=[0, 15, 0, 15],
+                horizontal_align="center",
+            )
             cell.render(draw, image, x, y, box_width, box_height)
 
     fp = BytesIO()
@@ -1201,18 +1362,22 @@ async def draw_courage(hero_id, icon_ids):
     hero_image = hero_image.resize((97, 128), Image.ANTIALIAS)
 
     table = Table(background="#000000")
-    table.add_row([
-        ColorCell(color="white", width=97, height=64),
-        ImageCell(img=await get_item_image(icon_ids[0])),
-        ImageCell(img=await get_item_image(icon_ids[1])),
-        ImageCell(img=await get_item_image(icon_ids[2]))
-    ])
-    table.add_row([
-        ColorCell(color="white", width=97, height=64),
-        ImageCell(img=await get_item_image(icon_ids[3])),
-        ImageCell(img=await get_item_image(icon_ids[4])),
-        ImageCell(img=await get_item_image(icon_ids[5]))
-    ])
+    table.add_row(
+        [
+            ColorCell(color="white", width=97, height=64),
+            ImageCell(img=await get_item_image(icon_ids[0])),
+            ImageCell(img=await get_item_image(icon_ids[1])),
+            ImageCell(img=await get_item_image(icon_ids[2])),
+        ]
+    )
+    table.add_row(
+        [
+            ColorCell(color="white", width=97, height=64),
+            ImageCell(img=await get_item_image(icon_ids[3])),
+            ImageCell(img=await get_item_image(icon_ids[4])),
+            ImageCell(img=await get_item_image(icon_ids[5])),
+        ]
+    )
     image = table.render()
     image = paste_image(image, hero_image, 0, 0)
 
@@ -1232,18 +1397,12 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
     filename = await httpgetter.cache.new(uri, "png")
 
     sorting_info = [
-        {
-            "filter": lambda c: c.type == "Hero",
-            "sort": lambda c: hero_turns[c.id]
-        },
+        {"filter": lambda c: c.type == "Hero", "sort": lambda c: hero_turns[c.id]},
         {
             "filter": lambda c: c.type != "Hero" and c.type != "Item",
-            "sort": lambda c: c.mana_cost
+            "sort": lambda c: c.mana_cost,
         },
-        {
-            "filter": lambda c: c.type == "Item",
-            "sort": lambda c: c.gold_cost
-        }
+        {"filter": lambda c: c.type == "Item", "sort": lambda c: c.gold_cost},
     ]
     ordered_cards = []
     for info in sorting_info:
@@ -1255,8 +1414,12 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
     grey_color = "#BBBBBB"
     table = Table(background=discord_color2)
 
-    table.add_row([ColorCell(color=discord_color1, height=border_size)
-                  for i in range(column_count)])
+    table.add_row(
+        [
+            ColorCell(color=discord_color1, height=border_size)
+            for i in range(column_count)
+        ]
+    )
     first = True
     for card in ordered_cards:
         cost = ""
@@ -1273,22 +1436,28 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
         if first:
             first = False
         else:
-            table.add_row([ColorCell(color=discord_color2, height=2)
-                          for i in range(column_count)])
-        table.add_row([
-            ImageCell(img=await get_url_image(card.mini_image), height=48),
-            ImageCell(img=await get_url_image(card.type_image), height=48),
-            TextCell(cost),
-            TextCell(card.name),
-            TextCell(last_cell, horizontal_align="right")
-        ])
+            table.add_row(
+                [ColorCell(color=discord_color2, height=2) for i in range(column_count)]
+            )
+        table.add_row(
+            [
+                ImageCell(img=await get_url_image(card.mini_image), height=48),
+                ImageCell(img=await get_url_image(card.type_image), height=48),
+                TextCell(cost),
+                TextCell(card.name),
+                TextCell(last_cell, horizontal_align="right"),
+            ]
+        )
         card_color = card.color.blend(Color(discord_color2), 0.5)
         for cell in table.rows[len(table.rows) - 1]:
             cell.background = card_color.hex
     image = table.render()
 
     border_image = Image.new(
-        'RGBA', (image.size[0] + (border_size * 2), image.size[1] + border_size), color=discord_color1)
+        "RGBA",
+        (image.size[0] + (border_size * 2), image.size[1] + border_size),
+        color=discord_color1,
+    )
     image = paste_image(border_image, image, border_size, 0)
 
     image.save(filename, format="PNG")
@@ -1298,18 +1467,21 @@ async def draw_artifact_deck(deck_string, cards, hero_turns, card_counts):
 
 # taken from https://stackoverflow.com/questions/4998427
 def grouper(values, N):
-    return [values[n:n+N] for n in range(0, len(values), N)]
+    return [values[n : n + N] for n in range(0, len(values), N)]
 
 
 async def draw_neutralitems_tier(selected_tier, all_neutral_items):
-    items = list(filter(lambda i: i.neutral_tier ==
-                 str(selected_tier), all_neutral_items))
+    items = list(
+        filter(lambda i: i.neutral_tier == str(selected_tier), all_neutral_items)
+    )
     table = Table(background=discord_color2)
     for item in items:
-        table.add_row([
-            ImageCell(img=await get_item_image(item.id)),
-            TextCell(item.localized_name, font_size=30, padding=10)
-        ])
+        table.add_row(
+            [
+                ImageCell(img=await get_item_image(item.id)),
+                TextCell(item.localized_name, font_size=30, padding=10),
+            ]
+        )
     image = table.render()
 
     fp = BytesIO()
@@ -1326,23 +1498,33 @@ async def draw_neutralitems(selected_tier, all_neutral_items):
     items_per_row = 6
     table = Table(background=discord_color1)
     for tier in range(1, 6):
-        header_row = [ColorCell(color=discord_color2)
-                      for i in range(items_per_row)]
-        header_row[0] = TextCell(f"Tier {tier}", color=neutral_tier_text_colors[str(
-            tier)], font_size=25, padding=[10, 0, 10, 10], background=discord_color2)
-        header_row[items_per_row - 1] = TextCell(neutral_timings[str(tier)], color=discord_color0, font_size=25, padding=[
-                                                 10, 10, 10, 0], horizontal_align="right", background=discord_color2)
+        header_row = [ColorCell(color=discord_color2) for i in range(items_per_row)]
+        header_row[0] = TextCell(
+            f"Tier {tier}",
+            color=neutral_tier_text_colors[str(tier)],
+            font_size=25,
+            padding=[10, 0, 10, 10],
+            background=discord_color2,
+        )
+        header_row[items_per_row - 1] = TextCell(
+            neutral_timings[str(tier)],
+            color=discord_color0,
+            font_size=25,
+            padding=[10, 10, 10, 0],
+            horizontal_align="right",
+            background=discord_color2,
+        )
         table.add_row(header_row)
-        items = list(filter(lambda i: i.neutral_tier ==
-                     str(tier), all_neutral_items))
+        items = list(filter(lambda i: i.neutral_tier == str(tier), all_neutral_items))
         item_img_cells = []
         for item in items:
             item_img_cells.append(ImageCell(img=await get_item_image(item.id)))
         new_rows = grouper(item_img_cells, items_per_row)
         for row in new_rows:
             table.add_row(row)
-        footer_row = [ColorCell(color=discord_color1, height=20)
-                      for i in range(items_per_row)]
+        footer_row = [
+            ColorCell(color=discord_color1, height=20) for i in range(items_per_row)
+        ]
         table.add_row(footer_row)
 
     image = table.render()
@@ -1360,8 +1542,10 @@ def get_poly_points(n, radius, origin=(0, 0), radius_percentages=None):
         radii = [radius * radius_percentages[i] for i in range(n)]
     rot_start = 0 - (math.pi / 2)
     return [
-        (math.cos(rot_start + th) * radii[j] + origin[0],
-         math.sin(rot_start + th) * radii[j] + origin[1])
+        (
+            math.cos(rot_start + th) * radii[j] + origin[0],
+            math.sin(rot_start + th) * radii[j] + origin[1],
+        )
         for j, th in enumerate([i * (2 * math.pi) / n for i in range(n)])
     ]
 
@@ -1380,6 +1564,7 @@ def draw_poly_label(draw, point, center, text):
         point[1] -= font_size[1] / 2
     draw.text(tuple(point), text, font=font, fill="#ffffff")
 
+
 def draw_polygraph(values, labels):
     size = (500, 500)
     polygon_radius = 175
@@ -1387,7 +1572,7 @@ def draw_polygraph(values, labels):
 
     center = (size[0] / 2, size[1] / 2)
 
-    image = Image.new('RGBA', size)
+    image = Image.new("RGBA", size)
     draw = ImageDraw.Draw(image)
     draw.rectangle([0, 0, image.size[0], image.size[1]], fill=discord_color2)
 
@@ -1400,14 +1585,16 @@ def draw_polygraph(values, labels):
     for i in range(len(points)):
         draw_poly_label(draw, points[i], center, labels[i])
 
-    image2 = Image.new('RGBA', size)
+    image2 = Image.new("RGBA", size)
     draw2 = ImageDraw.Draw(image2)
     data_points = get_poly_points(point_count, polygon_radius, center, values)
     draw2.polygon(data_points, fill="#FFDF0044", outline="#FFDF00")
     for p in data_points:
         dot_rad = 2
-        draw2.ellipse([(p[0] - dot_rad, p[1] - dot_rad),
-                      (p[0] + dot_rad, p[1] + dot_rad)], fill="#FFDF00")
+        draw2.ellipse(
+            [(p[0] - dot_rad, p[1] - dot_rad), (p[0] + dot_rad, p[1] + dot_rad)],
+            fill="#FFDF00",
+        )
     image = paste_image(image, image2, 0, 0)
 
     fp = BytesIO()
@@ -1417,7 +1604,9 @@ def draw_polygraph(values, labels):
     return fp
 
 
-async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_categories, leveled_hero_stats):
+async def draw_herostatstable(
+    hero_stat, level, hero_count, reverse, hero_stat_categories, leveled_hero_stats
+):
     category = None
     for cat in hero_stat_categories:
         if any(stat["stat"] == hero_stat for stat in cat["stats"]):
@@ -1430,8 +1619,9 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
 
     # sort / get data
     hero_data = leveled_hero_stats[level]
-    hero_data = sorted(hero_data, key=lambda hero: hero.get(
-        hero_stat), reverse=not reverse)
+    hero_data = sorted(
+        hero_data, key=lambda hero: hero.get(hero_stat), reverse=not reverse
+    )
     hero_data = hero_data[0:hero_count]
 
     table = Table(border_size=10)
@@ -1442,13 +1632,18 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
 
     header_row = [TextCell("")]
     for stat in stats:
-        header_row.append(SlantedTextCell(
-            stat["name"],
-            font_size=20,
-            background=stat_highlight_color if stat["stat"] == hero_stat else table_background,
-            border_color=table_border_color,
-            border_size=2,
-            rotation=45))
+        header_row.append(
+            SlantedTextCell(
+                stat["name"],
+                font_size=20,
+                background=stat_highlight_color
+                if stat["stat"] == hero_stat
+                else table_background,
+                border_color=table_border_color,
+                border_size=2,
+                rotation=45,
+            )
+        )
 
     header_height = max(cell.height for cell in header_row)
     padding_right = int(header_height / math.tan(header_row[-1].rotation_rad))
@@ -1460,12 +1655,14 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
     for hero in hero_data:
         cell_background = table_background
         # cell_background = stat_highlight_color if i % 2 else table_background
-        new_row = [ImageCell(
-            img=await get_hero_icon(hero.get("id")),
-            padding=3,
-            border_color=table_border_color,
-            border_size=2,
-            background=table_background)
+        new_row = [
+            ImageCell(
+                img=await get_hero_icon(hero.get("id")),
+                padding=3,
+                border_color=table_border_color,
+                border_size=2,
+                background=table_background,
+            )
         ]
         for stat in stats:
             value = hero.get(stat["stat"])
@@ -1477,13 +1674,18 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
             value = re.sub("\.0+$", "", value)
             if stat.get("display") == "resistance_percentage":
                 value += "%"
-            new_row.append(TextCell(
-                value,
-                font_size=16,
-                padding=10,
-                border_color=table_border_color,
-                border_size=2,
-                background=stat_highlight_color if stat["stat"] == hero_stat else cell_background))
+            new_row.append(
+                TextCell(
+                    value,
+                    font_size=16,
+                    padding=10,
+                    border_color=table_border_color,
+                    border_size=2,
+                    background=stat_highlight_color
+                    if stat["stat"] == hero_stat
+                    else cell_background,
+                )
+            )
         table.add_row(new_row)
         i += 1
 
@@ -1494,6 +1696,7 @@ async def draw_herostatstable(hero_stat, level, hero_count, reverse, hero_stat_c
     fp.seek(0)
 
     return fp
+
 
 # draws the recipe image for the given item
 
@@ -1525,9 +1728,11 @@ async def draw_itemrecipe(main_item, components, products):
     if products:
         rows += 1
 
-    base_size = (max_items_per_row * item_size[0] + outer_padding * 2, (rows * (
-        inner_padding + item_size[1])) - inner_padding + (2 * outer_padding))
-    base_image = Image.new('RGBA', base_size, (0, 0, 0, 0))
+    base_size = (
+        max_items_per_row * item_size[0] + outer_padding * 2,
+        (rows * (inner_padding + item_size[1])) - inner_padding + (2 * outer_padding),
+    )
+    base_image = Image.new("RGBA", base_size, (0, 0, 0, 0))
 
     rows = []
     if products:
@@ -1546,7 +1751,8 @@ async def draw_itemrecipe(main_item, components, products):
             start_x = int((base_size[0] / 2) - (item_size[0] / 2))
         else:
             spacing = int(
-                (base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1))
+                (base_size[0] - outer_padding * 2 - item_size[0]) / (len(row) - 1)
+            )
             start_x = int(outer_padding)
         if spacing > max_spacing:
             start_x += int(((spacing - max_spacing) * (len(row) - 1)) / 2)
@@ -1589,7 +1795,8 @@ async def draw_itemrecipe(main_item, components, products):
             base_image.paste(image, row_points[i][j])
 
     base_image = base_image.resize(
-        (base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS)
+        (base_size[0] // 2, base_size[1] // 2), Image.ANTIALIAS
+    )
 
     base_image.save(filename, format="PNG")
 
@@ -1601,20 +1808,23 @@ async def draw_heroabilities(abilities):
     table = Table(background=discord_color2)
     for ability in abilities:
         icon = await get_url_image(f"{vpkurl}{ability.icon}")
-        icon = icon.resize(
-            (icon.size[0] // 2, icon.size[1] // 2), Image.ANTIALIAS)
+        icon = icon.resize((icon.size[0] // 2, icon.size[1] // 2), Image.ANTIALIAS)
         row = [
             ImageCell(img=icon),
             TextCell(ability.localized_name, font_size=30, padding=10),
-            TextCell("")
+            TextCell(""),
         ]
         if ability.scepter_grants:
-            aghs_icon = f"{vpkurl}/panorama/images/hud/reborn/aghsstatus_scepter_on_psd.png"
+            aghs_icon = (
+                f"{vpkurl}/panorama/images/hud/reborn/aghsstatus_scepter_on_psd.png"
+            )
             aghs_icon = await get_url_image(aghs_icon)
             aghs_icon = aghs_icon.resize(icon.size, Image.ANTIALIAS)
             row[2] = ImageCell(img=aghs_icon)
         elif ability.shard_grants:
-            aghs_icon = f"{vpkurl}/panorama/images/hud/reborn/aghsstatus_shard_on_psd.png"
+            aghs_icon = (
+                f"{vpkurl}/panorama/images/hud/reborn/aghsstatus_shard_on_psd.png"
+            )
             aghs_icon = await get_url_image(aghs_icon)
             # aghs_icon = aghs_icon.resize(icon.size, Image.ANTIALIAS)
             row[2] = ImageCell(img=aghs_icon, padding_top=20)
@@ -1635,7 +1845,7 @@ async def add_player_ability_upgrades_row(table, player):
     row = [
         ColorCell(width=5, color=("green" if player["isRadiant"] else "red")),
         ImageCell(img=await get_hero_image(player["hero_id"]), height=48),
-        TextCell(player.get("personaname", "Anonymous"))
+        TextCell(player.get("personaname", "Anonymous")),
     ]
     # levels at which there are no upgrades
     empty_levels = [17, 19, 21, 22, 23, 24]
@@ -1646,9 +1856,14 @@ async def add_player_ability_upgrades_row(table, player):
             row.append(TextCell(""))
             continue
         ability = abilities.pop(0)
-        row.append(ImageCell(img=await get_ability_image(ability, player["hero_id"]), height=48))
+        row.append(
+            ImageCell(
+                img=await get_ability_image(ability, player["hero_id"]), height=48
+            )
+        )
 
     table.add_row(row)
+
 
 # draws a table of the ability upgrades for each hero in the match.
 
@@ -1659,12 +1874,14 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
     item_size_smaller = (int(item_size[0] / 2), int(item_size[1] / 2))
     item_rows = [
         [(0, 1), (0, 2), (1, 1), (1, 2), (2, 1), (2, 2)],
-        [(0, 0),        (1, 0),        (2, 0)],
+        [(0, 0), (1, 0), (2, 0)],
         None,
-        [(3, 0),        (4, 0),        (5, 0)],
+        [(3, 0), (4, 0), (5, 0)],
         [(3, 1), (3, 2), (4, 1), (4, 2), (5, 1), (5, 2)],
     ]
-    blank_item_image = await get_url_image(f"{vpkurl}/panorama/images/items/emptyitembg_png.png")
+    blank_item_image = await get_url_image(
+        f"{vpkurl}/panorama/images/items/emptyitembg_png.png"
+    )
     border_gap = 8
     border_color = discord_color3
 
@@ -1685,7 +1902,8 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
         is_dense_row = len(images) == 6
         gap_size = (2 * border_gap) if is_dense_row else border_gap
         image_row = Image.new(
-            "RGBA", ((item_size[0] * len(images)) + (gap_size * 2), item_size[1]))
+            "RGBA", ((item_size[0] * len(images)) + (gap_size * 2), item_size[1])
+        )
         x = 0
         for i in range(len(images)):
             image_row.paste(images[i], (x, 0))
@@ -1695,7 +1913,12 @@ async def draw_item_slots(slot_item_counts: typing.List[typing.Tuple[int, int]])
 
         if len(images) == 6:
             image_row = image_row.resize(
-                ((item_size_smaller[0] * len(images) + (border_gap * 2)), item_size_smaller[1]), Image.ANTIALIAS)
+                (
+                    (item_size_smaller[0] * len(images) + (border_gap * 2)),
+                    item_size_smaller[1],
+                ),
+                Image.ANTIALIAS,
+            )
 
         table.add_row([ImageCell(img=image_row)])
     image = table.render()
