@@ -426,9 +426,12 @@ def get_benchmark(benchmarks):
 
     for key in keys:
         pct = benchmarks.get(key).get('pct', 0)
-        if pct > 0:
+        if pct is not None and pct > 0:
             total += pct
             count += 1
+
+    if count == 0:
+        return None
 
     overall = round((total / count) * 100)
     color = ''
@@ -444,7 +447,6 @@ async def add_player_row(table, match, player, is_parsed, is_ability_draft, has_
     draw_bear_row = player["hero_id"] == 80 and len(
         player.get("additional_units") or []) > 0
     bench = get_benchmark(player.get('benchmarks'))
-    logger.info("BENCH: {0}".format(bench))
     (rank_tier, leaderboard_rank) = await get_rank_info(player.get('account_id'))
 
     row = [
